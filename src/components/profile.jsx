@@ -146,7 +146,9 @@ export default function Profile() {
         </ListSection>
 
         <ListSection title="Support & Community" accent="bg-[#3B82F6]">
+          <a href=''>
           <ListItem icon={<IconTelegram />} label="Telegram Channel" subLabel="Join our community" isExternal />
+          </a>
           <ListItem onClick={handleSignOut} icon={<IconSignOut />} label="Sign Out" subLabel="Log out of your account" isDestructive />
         </ListSection>
       </main>

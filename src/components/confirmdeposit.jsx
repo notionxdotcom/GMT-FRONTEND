@@ -14,9 +14,9 @@ const ConfirmDeposit = () => {
 
   // Static Bank Details
   const BANK_DETAILS = {
-    name: "SafeHaven Bank",
-    accountName: "NOTIONX-PAY",
-    accountNumber: "6027053166"
+    name: "FIRST BANK",
+    accountName: "ARTHUR EMMANUEL VICTOR",
+    accountNumber: "3130114223"
   };
 
   useEffect(() => {
