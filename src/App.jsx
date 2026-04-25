@@ -61,7 +61,7 @@ function App() {
             <Route path="/withdraw" element={<WithdrawPage />} />
             <Route path="/bank-account" element={<BankAccountScreen />} />
             <Route path="/confirm-deposit" element={<ConfirmDeposit />} />
-               <Route path="/products" element={<Adminlogin />} />
+               <Route path="/products" element={<MyProducts />} />
           </Route>
 
           {/* --- PROTECTED ADMIN ROUTES --- */}
