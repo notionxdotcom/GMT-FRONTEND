@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calendar, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Package, Calendar, Clock, TrendingUp } from 'lucide-react';
 import api from '../../interceptor';
 
 const MyProducts = () => {
@@ -10,6 +10,8 @@ const MyProducts = () => {
     const fetchMyProducts = async () => {
       try {
         const res = await api.get('/user/my-products');
+        // Check the console to see the exact data structure
+        console.log("Fetched Products:", res.data.data);
         setProducts(res.data.data);
       } catch (err) {
         console.error("Error fetching products", err);
@@ -41,7 +43,7 @@ const MyProducts = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((item) => (
             <div key={item.purchase_id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-              {/* Card Header */}
+              
               <div className="p-8 pb-0 flex justify-between items-start">
                 <div className="bg-[#006B5E]/10 p-4 rounded-2xl">
                   <TrendingUp className="text-[#006B5E]" size={24} />
@@ -53,9 +55,9 @@ const MyProducts = () => {
 
               <div className="p-8 pt-6">
                 <h3 className="text-2xl font-black text-gray-800 mb-1">{item.name}</h3>
-                <p className="text-[#006B5E] font-black text-lg">₦{parseFloat(item.price).toLocaleString()}</p>
+                {/* Ensure price is handled as a number */}
+                <p className="text-[#006B5E] font-black text-lg">₦{Number(item.price).toLocaleString()}</p>
 
-                {/* Progress Section */}
                 <div className="mt-8 space-y-3">
                   <div className="flex justify-between items-end">
                     <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
@@ -73,13 +75,15 @@ const MyProducts = () => {
                   </p>
                 </div>
 
-                {/* Details Footer */}
                 <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-gray-50">
                   <div className="flex items-center gap-3">
                     <Calendar size={16} className="text-gray-300" />
                     <div>
                       <p className="text-[9px] font-black text-gray-400 uppercase">Started</p>
-                      <p className="text-xs font-black text-gray-700">{new Date(item.purchase_date).toLocaleDateString()}</p>
+                      {/* FIX: Changed item.purchase_date to item.created_at */}
+                      <p className="text-xs font-black text-gray-700">
+                        {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
