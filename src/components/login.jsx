@@ -47,7 +47,13 @@ const handleLogin = async (e) => {
       password
     });
 
-    // 2. Set the User in Auth Store
+    // 2. Set the User in Au
+    // th Store
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      // If you have roles: 
+      localStorage.setItem('user_role', response.data.user.role || 'user');
+    }
     setAuth(response.data.user);
 
     // 3. Parallel Sync: Fetch bank details and app data at the same time
@@ -55,6 +61,7 @@ const handleLogin = async (e) => {
   
     console.log("Login & Parallel Sync Success");
     navigate('/dashboard'); 
+
       await Promise.all([
       syncAppData(),
       fetchBankDetails()
