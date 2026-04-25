@@ -6,14 +6,14 @@ const Deposit = () => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
 
-  const amounts = [3000, 6000, 10000, 20000, 50000, 100000, 200000, 300000];
+  const amounts = [5000,  10000, 20000, 50000, 100000, 200000, 300000];
 
   const handleSelect = (amt) => setAmount(amt.toString());
   const handleInputChange = (e) => setAmount(e.target.value);
 
   const handleContinue = () => {
     const finalAmount = parseFloat(amount);
-    if (!finalAmount || finalAmount < 3000) {
+    if (!finalAmount || finalAmount < 5000) {
       alert("Minimum recharge is ₦3,000");
       return;
     }
