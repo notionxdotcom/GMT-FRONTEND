@@ -13,11 +13,11 @@ const MyTeam = () => {
     const fetchData = async () => {
       try {
         // 1. Fetch referral list
-        const referralRes = await api.get('/api/user/my-referrals');
+        const referralRes = await api.get('/user/my-referrals');
         setReferrals(referralRes.data.data || []);
 
         // 2. Fetch bonus from Ledger (Filter for referral/bonus types)
-        const ledgerRes = await api.get('/api/user/ledger'); 
+        const ledgerRes = await api.get('/user/ledger'); 
         const ledgerData = ledgerRes.data.data || [];
         
         // Summing up ledger entries that are marked as referral bonuses
