@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect
-import { useNavigate } from 'react-router-dom'; // Added useNavigate
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Landmark, Wallet, ShieldCheck, 
   ChevronRight, FileText, Info, Menu, Bell, User
@@ -9,45 +9,47 @@ import useBankStore from '../../store/bankdetailsstore';
 import api from '../../interceptor';
 
 const WithdrawPage = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
   const [amount, setAmount] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // Local loading state
+  const [loading, setLoading] = useState(false);
   
   const { bankData, fetchBankDetails } = useBankStore();
 
-  // Fetch bank details on mount if they don't exist
   useEffect(() => {
     if (!bankData) {
       fetchBankDetails();
     }
-  }, []);
+  }, [bankData, fetchBankDetails]);
 
-  // Business Logic
+  // --- BUSINESS LOGIC ---
   const minAmount = 800;
-  const feeRate = 0.15;
-  const numericAmount = parseFloat(amount) || 0;
-  const fee = numericAmount * feeRate;
-  const totalReceive = numericAmount > 0 ? numericAmount - fee : 0;
+  const feeRate = 0.20; // 15%
+  
+  const payoutAmount = parseFloat(amount) || 0; // What the user wants in their bank
+  const fee = payoutAmount * feeRate;           // 15% on top
+  const totalDeduction = payoutAmount + fee;    // Total taken from wallet balance
 
   const withdraw = async () => {
     // 1. Validation Checks
     if (!bankData) {
       return alert("Please link your bank account first!");
     }
-    if (numericAmount < minAmount) {
-      return alert(`Minimum withdrawal amount is ₦${minAmount}`);
+    if (payoutAmount < minAmount) {
+      return alert(`Minimum payout amount is ₦${minAmount}`);
     }
 
     setLoading(true);
     try {
-      // Your backend expects: amount, bankName, accountNumber, accountName
+      // We send the totalDeduction so the backend can verify 
+      // if the user has enough to cover BOTH the payout and the fee.
       await api.post("/wallet/requestwithdrawal", {
-        amount: numericAmount,
-        
+        amount: totalDeduction, 
+        payoutAmount: payoutAmount, // Admin sees this as the target transfer amount
+        fee: fee
       });
 
-      alert("Withdrawal Submitted! Your transaction will be verified shortly.");
+      alert(`Withdrawal Submitted! ₦${totalDeduction.toLocaleString()} will be deducted from your wallet.`);
       navigate('/dashboard'); 
     } catch (err) {
       const errormessage = err?.response?.data?.message || "Something went wrong. Please try again.";
@@ -100,8 +102,8 @@ const WithdrawPage = () => {
                   <Wallet size={24} />
                 </div>
                 <div>
-                  <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest">Withdrawal Amount</h3>
-                  <p className="text-gray-400 text-[10px] font-bold uppercase mt-1">Min. Withdrawal: ₦{minAmount}</p>
+                  <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest">Amount to Receive</h3>
+                  <p className="text-gray-400 text-[10px] font-bold uppercase mt-1">Min. Payout: ₦{minAmount}</p>
                 </div>
               </div>
               <button 
@@ -129,23 +131,23 @@ const WithdrawPage = () => {
               <div className="w-8 h-8 bg-gray-800 text-white rounded-lg flex items-center justify-center">
                 <FileText size={16} />
               </div>
-              <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest">Withdrawal Summary</h3>
+              <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest">Fee Breakdown</h3>
             </div>
             
             <div className="p-6 md:p-10 space-y-6">
               <div className="flex justify-between items-center text-sm font-bold">
-                <span className="text-gray-400 uppercase text-[11px] tracking-widest">Minimum</span>
-                <span className="text-gray-800 font-black">₦{minAmount.toLocaleString()}</span>
+                <span className="text-gray-400 uppercase text-[11px] tracking-widest">Bank Payout</span>
+                <span className="text-gray-800 font-black">₦{payoutAmount.toLocaleString()}</span>
               </div>
 
               <div className="flex justify-between items-center text-sm font-bold">
-                <span className="text-gray-400 uppercase text-[11px] tracking-widest">Withdrawal Fee (15%)</span>
-                <span className="text-rose-500 font-black">- ₦{fee.toLocaleString()}</span>
+                <span className="text-gray-400 uppercase text-[11px] tracking-widest">Service Fee (15%)</span>
+                <span className="text-rose-500 font-black">+ ₦{fee.toLocaleString()}</span>
               </div>
 
               <div className="pt-6 border-t border-dashed border-gray-200 flex justify-between items-center">
-                <span className="text-gray-800 uppercase text-xs font-black tracking-widest">You Receive</span>
-                <span className="text-3xl font-black text-[#006B5E]">₦{totalReceive.toLocaleString()}</span>
+                <span className="text-gray-800 uppercase text-xs font-black tracking-widest">Total Wallet Deduction</span>
+                <span className="text-3xl font-black text-rose-600">₦{totalDeduction.toLocaleString()}</span>
               </div>
 
               <div className="flex justify-between items-center bg-gray-50 p-5 rounded-2xl border border-gray-100">
@@ -153,7 +155,7 @@ const WithdrawPage = () => {
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
                         <Info size={16} className="text-gray-400" />
                     </div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Destination</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bank Account</span>
                 </div>
                 <span className="text-sm font-black text-gray-800">
                   {bankData?.bank_name || 'Not linked'} {bankData?.account_number && `· ${bankData.account_number}`}
@@ -163,14 +165,14 @@ const WithdrawPage = () => {
               <button 
                 onClick={withdraw}
                 disabled={loading}
-                className={`w-full ${loading ? 'bg-gray-400' : 'bg-[#006B5E] hover:bg-[#004D44]'} text-white py-5 rounded-[1.5rem] font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/10 transition-all active:scale-95 group`}
+                className={`w-full ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#006B5E] hover:bg-[#004D44]'} text-white py-5 rounded-[1.5rem] font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/10 transition-all active:scale-95 group`}
               >
                 {loading ? (
                    <span className="animate-pulse">Processing...</span>
                 ) : (
                   <>
                     <ShieldCheck size={22} className="group-hover:scale-110 transition-transform" /> 
-                    Withdraw Now 
+                    Confirm Withdrawal 
                     <ChevronRight size={22} />
                   </>
                 )}
@@ -178,7 +180,7 @@ const WithdrawPage = () => {
 
               <div className="flex items-center justify-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 <ShieldCheck size={14} className="text-emerald-500" />
-                Secured & encrypted by NotionX
+                Deduction occurs immediately upon submission
               </div>
             </div>
           </div>
