@@ -25,7 +25,7 @@ const MyTeam = () => {
         // We filter for 'referral_bonus' types linked to your wallet_id
         const ledgerEntries = ledgerRes.data.data || [];
         const sum = ledgerEntries
-          .filter(entry => entry.type === 'referral_bonus')
+          .filter(entry => entry.type === 'referral_commission')
           .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
         setTotalCommission(sum);
