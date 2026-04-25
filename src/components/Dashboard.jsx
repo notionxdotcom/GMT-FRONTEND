@@ -140,15 +140,7 @@ const Dashboard = () => {
                 <InfoRow label="Daily Bonus" value="₦50" />
                 <InfoRow label="Service Fee" value="15%" />
               </div>
-              <div className="mt-6 bg-emerald-50 p-4 rounded-2xl border border-emerald-100 transition-colors">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-[#006B5E] text-[10px] font-black uppercase">Account Status</p>
-                    <p className="text-[#006B5E] text-sm font-black">{user?.isVerified ? 'Verified' : 'Verification Pending'}</p>
-                  </div>
-                  <ChevronRight className="text-[#006B5E]" size={20} />
-                </div>
-              </div>
+             
             </div>
           </div>
 
