@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 import AdminLayout from './adminlayout';
-import TransactionScreen from './Transaction';
-import UserManagementScreen from './usermanagement';
-import ProductManagement from './productmanagement';
 
 const MainAdminPortal = () => {
-  const [activeTab, setActiveTab] = useState('transactions');
-
+  // We remove the activeTab state here because the URL in App.js 
+  // now determines which component renders via the <Outlet />
+  
   return (
-    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {activeTab === 'transactions' ? <TransactionScreen /> : activeTab === 'users' ? <UserManagementScreen /> : <ProductManagement />}
+    <AdminLayout>
+      {/* This Outlet acts as a placeholder for TransactionScreen, 
+          UserManagementScreen, or ProductManagement based on the URL */}
+      <Outlet />
     </AdminLayout>
   );
 };
