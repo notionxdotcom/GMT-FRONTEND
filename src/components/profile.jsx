@@ -84,13 +84,17 @@ export default function Profile() {
   // State for Copy Feedback
   const [copied, setCopied] = useState(false);
 
-  const handleCopyCode = () => {
-    if (user?.referral_code) {
-      navigator.clipboard.writeText(user.referral_code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset after 2s
-    }
-  };
+const handleCopyCode = () => {
+  if (user?.referral_code) {
+    // Construct the full URL
+    // Use window.location.origin to automatically get 'https://notiox.com' or 'localhost:5173'
+    const referralLink = `${window.location.origin}/register?ref=${user.referral_code}`;
+    
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+};
 
   const handleSignOut = () => {
     clearAuth();
