@@ -56,7 +56,7 @@ const Sidebar = ({ isMenuOpen, toggleMenu, logoPath }) => {
           <SidebarLink 
             to="/profile" 
             icon={<User size={20}/>} 
-            label="Profile" 
+            label="Profil" 
             onClick={toggleMenu} 
           />
           <SidebarLink 
