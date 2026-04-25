@@ -14,7 +14,7 @@ const MyTeam = () => {
       try {
         // Fetching both the team list and the ledger simultaneously
         const [referralRes, ledgerRes] = await Promise.all([
-          api.get('user/my-referrals'),
+          api.get('/user/my-referrals'),
           api.get('/user/ledger')
         ]);
 
