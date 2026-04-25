@@ -137,8 +137,8 @@ const Dashboard = () => {
               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Platform Summary</h4>
               <div className="space-y-4">
                 <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
-                <InfoRow label="Daily Bonus" value="₦50" />
-                <InfoRow label="Service Fee" value="15%" />
+             
+                <InfoRow label="Service Fee" value="20%" />
               </div>
              
             </div>
