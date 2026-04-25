@@ -2,7 +2,7 @@ import axios from 'axios';
 import useAuthStore from './store/authstore';
 
 const api = axios.create({
-  baseURL:  'http://localhost:5000/api', 
+  baseURL:  'https://sublime-optimism-production-20d2.up.railway.app/api', 
 
   withCredentials: true,
 });

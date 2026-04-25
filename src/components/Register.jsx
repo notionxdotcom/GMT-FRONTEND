@@ -24,48 +24,47 @@ const RegistrationPage = () => {
   };
 
   // 3. Signup Logic
-  const handlesignup = async (e) => {
-    e.preventDefault();
+  // 3. Signup Logic
+const handlesignup = async (e) => {
+  e.preventDefault();
+  
+  const { phoneNumber, password, confirmPassword, referralCode } = formData;
+
+  if (!phoneNumber || !password || !confirmPassword) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    setLoading(true);
     
-    const { phoneNumber, password, confirmPassword, referralCode } = formData;
+    // REMOVE the extra /api from the baseUrl or the axios call
+    const baseUrl = 'https://sublime-optimism-production-20d2.up.railway.app'; 
+    
+    // Ensure this matches your actual backend route (usually /api/auth/signup)
+    const response = await axios.post(`${baseUrl}/api/auth/signup`, {
+      phoneNumber,
+      password,
+      referralCode
+    });
 
-    // Basic Validation
-    if (!phoneNumber || !password || !confirmPassword) {
-      alert("Please fill in all required fields."); // Replace with a Toast library if you have one
-      return;
-    }
+    console.log("Signup Success:", response.data);
+    alert("Account created successfully!");
+    navigate('/login'); 
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Connection to your backend
-      // Replace with your actual Vercel/Local URL
-      const baseUrl = 'http://localhost:5000'; 
-      
-      const response = await axios.post(`${baseUrl}/api/auth/signup`, {
-        phoneNumber,
-        password,
-        referralCode
-      });
-
-      console.log("Signup Success:", response.data);
-      alert("Account created successfully!");
-      navigate('/login'); 
-
-    } catch (error) {
-      const errormessage = error?.response?.data?.message || "Something went wrong. Please try again.";
-      console.error("Signup Error:", error);
-      alert(errormessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  } catch (error) {
+    const errormessage = error?.response?.data?.message || "Connection failed. Check your backend logs.";
+    console.error("Signup Error:", error);
+    alert(errormessage);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-blue-50/30 flex items-center justify-center p-4 font-sans">
       <div className="max-w-5xl w-full bg-white rounded-[2.5rem] shadow-2xl shadow-blue-100/50 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
