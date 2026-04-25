@@ -48,9 +48,9 @@ const Sidebar = ({ isMenuOpen, toggleMenu, logoPath }) => {
             onClick={toggleMenu} 
           />
           <SidebarLink 
-            to="/team" 
+            to="/products" 
             icon={<Users size={20}/>} 
-            label="My Team" 
+            label="My Products" 
             onClick={toggleMenu} 
           />
           <SidebarLink 
