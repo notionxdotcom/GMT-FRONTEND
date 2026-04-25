@@ -52,13 +52,14 @@ const handleLogin = async (e) => {
 
     // 3. Parallel Sync: Fetch bank details and app data at the same time
     // This reduces total wait time significantly
-    await Promise.all([
+  
+    console.log("Login & Parallel Sync Success");
+    navigate('/dashboard'); 
+      await Promise.all([
       syncAppData(),
       fetchBankDetails()
     ]);
 
-    console.log("Login & Parallel Sync Success");
-    navigate('/dashboard'); 
 
   } catch (error) {
     const errormessage = error?.response?.data?.message || "Invalid credentials.";
