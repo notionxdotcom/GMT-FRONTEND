@@ -19,7 +19,7 @@ const useUserStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       // Replace with your actual combined endpoint or multiple calls
-      const response = await axios.get('/api/user/profile'); 
+      const response = await api.get('/api/user/profile'); 
       const { user, wallet } = response.data;
       
       set({ 
