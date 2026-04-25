@@ -24,11 +24,22 @@ const MyTeam = () => {
         // 2. Calculate Total Commission from the Ledger
         // We filter for 'referral_bonus' types linked to your wallet_id
         const ledgerEntries = ledgerRes.data.data || [];
-        const sum = ledgerEntries
-          .filter(entry => entry.type === 'referral_commission')
-          .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+        const sum = ledgerEntries.reduce((acc, curr) => {
+  // 1. Clean the type string (remove spaces and make lowercase)
+  const entryType = curr.type?.toLowerCase().trim();
+  
+  // 2. Check for the match
+  if (entryType === 'referral_commission') {
+    // 3. Ensure the amount is treated as a number
+    // parseFloat handles strings like "500.00" from Postgres
+    const amount = parseFloat(curr.amount);
+    return acc + (isNaN(amount) ? 0 : amount);
+  }
+  
+  return acc;
+}, 0);
 
-        setTotalCommission(sum);
+setTotalCommission(sum);
       } catch (err) {
         console.error("Error syncing team data:", err);
       } finally {
