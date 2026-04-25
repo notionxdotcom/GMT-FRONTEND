@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authstore';
 import useBankStore from '../../store/bankdetailsstore';
 
+// --- 1. REUSABLE COMPONENTS ---
 
 const ActionButton = ({ icon, label, color, onClick }) => (
   <button onClick={onClick} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 flex flex-col items-center gap-2 active:scale-95 transition-transform">
@@ -52,6 +53,7 @@ const NavItem = ({ icon, label, active, onClick }) => (
 const IconUserSmall = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007B6E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 const IconUserLarge = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 const IconCopy = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+const IconCheck = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 const IconChevronRight = ({ color, isExternal }) => (
   isExternal ? 
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> :
@@ -72,12 +74,23 @@ const IconTeams = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="no
 const IconUserActive = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 
 
-
+// --- 3. MAIN COMPONENT ---
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, wallet, clearAuth } = useAuthStore();
   const { bankData, clearBankData } = useBankStore();
+
+  // State for Copy Feedback
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    if (user?.referral_code) {
+      navigator.clipboard.writeText(user.referral_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset after 2s
+    }
+  };
 
   const handleSignOut = () => {
     clearAuth();
@@ -87,6 +100,15 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans text-[#1A1C1E] pb-32">
+      
+      {/* --- COPY TOAST NOTIFICATION --- */}
+      {copied && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+          <IconCheck />
+          Referral Code Copied!
+        </div>
+      )}
+
       <header className="bg-white px-6 py-6 flex justify-between items-center">
         <div>
           <h1 className="text-[20px] font-bold">My Profile</h1>
@@ -98,6 +120,7 @@ export default function Profile() {
       </header>
 
       <main className="px-5 mt-4 space-y-6">
+        {/* Profile Card */}
         <section className="relative overflow-hidden bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[28px] p-6 shadow-xl shadow-[#007B6E]/20 text-white">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
@@ -117,27 +140,33 @@ export default function Profile() {
               <p className="text-[10px] uppercase tracking-wider font-bold text-white/60 mb-1">Balance</p>
               <p className="text-[20px] font-black">₦{wallet?.balance?.toLocaleString() || '0'}</p>
             </div>
+            
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex justify-between items-center">
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-white/60 mb-1">Referral Code</p>
                 <p className="text-[15px] font-bold">{user?.referral_code || '---'}</p>
               </div>
-              <button onClick={() => navigator.clipboard.writeText(user?.referral_code)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                <IconCopy />
+              <button 
+                onClick={handleCopyCode} 
+                className={`p-2 rounded-lg transition-all ${copied ? 'bg-green-500 scale-110 shadow-lg' : 'hover:bg-white/10'}`}
+              >
+                {copied ? <IconCheck /> : <IconCopy />}
               </button>
             </div>
           </div>
         </section>
 
+        {/* Action Buttons */}
         <section className="grid grid-cols-3 gap-3">
           <ActionButton onClick={() => navigate('/recharge')} icon={<IconRecharge />} label="Recharge" color="bg-green-50 text-[#007B6E]" />
           <ActionButton onClick={() => navigate('/withdraw')} icon={<IconWithdraw />} label="Withdraw" color="bg-purple-50 text-[#7C3AED]" />
-          <ActionButton icon={<IconInvite />} label="Invite" color="bg-blue-50 text-[#3B82F6]" />
+          <ActionButton onClick={handleCopyCode} icon={<IconInvite />} label="Invite" color="bg-blue-50 text-[#3B82F6]" />
         </section>
 
+        {/* List Sections */}
         <ListSection title="Transaction Records" accent="bg-[#007B6E]">
-          <ListItem icon={<IconHistoryGreen />} label="Recharge History" subLabel="View all deposits" />
-          <ListItem icon={<IconHistoryRed />} label="Withdrawal History" subLabel="View all withdrawals" />
+          <ListItem icon={<IconHistoryGreen />} label="Recharge History" subLabel="View all deposits" onClick={() => navigate('/recharge-history')} />
+          <ListItem icon={<IconHistoryRed />} label="Withdrawal History" subLabel="View all withdrawals" onClick={() => navigate('/withdrawal-history')} />
         </ListSection>
 
         <ListSection title="Account Settings" accent="bg-[#7C3AED]">
@@ -146,13 +175,14 @@ export default function Profile() {
         </ListSection>
 
         <ListSection title="Support & Community" accent="bg-[#3B82F6]">
-          <a href='https://t.me/+BPhjgB9auWM5ZTBk'>
-          <ListItem icon={<IconTelegram />} label="Telegram Channel" subLabel="Join our community" isExternal />
+          <a href='https://t.me/+BPhjgB9auWM5ZTBk' target="_blank" rel="noreferrer">
+            <ListItem icon={<IconTelegram />} label="Telegram Channel" subLabel="Join our community" isExternal />
           </a>
           <ListItem onClick={handleSignOut} icon={<IconSignOut />} label="Sign Out" subLabel="Log out of your account" isDestructive />
         </ListSection>
       </main>
 
+      {/* Navigation Footer */}
       <nav className="fixed bottom-6 left-0 right-0 flex justify-center px-5 z-50">
         <div className="bg-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 px-8 py-3 flex justify-between items-center w-full max-w-[400px]">
           <NavItem onClick={() => navigate('/dashboard')} icon={<IconHome />} label="Home" />

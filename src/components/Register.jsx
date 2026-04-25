@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Lock, Shield, Tag, Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // --- Added to read URL params ---
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -16,55 +17,61 @@ const RegistrationPage = () => {
     referralCode: ''
   });
 
+  // --- 2. Auto-fill referral code from URL on load ---
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setFormData(prev => ({ ...prev, referralCode: ref }));
+    }
+  }, [searchParams]);
+
   const logoPath = '/src/assets/logo.jpeg';
 
-  // 2. Handle Input Changes
+  // 3. Handle Input Changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. Signup Logic
-  // 3. Signup Logic
-const handlesignup = async (e) => {
-  e.preventDefault();
-  
-  const { phoneNumber, password, confirmPassword, referralCode } = formData;
-
-  if (!phoneNumber || !password || !confirmPassword) {
-    alert("Please fill in all required fields.");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    alert("Passwords do not match.");
-    return;
-  }
-
-  try {
-    setLoading(true);
+  // 4. Signup Logic
+  const handlesignup = async (e) => {
+    e.preventDefault();
     
-    // REMOVE the extra /api from the baseUrl or the axios call
-    const baseUrl = 'https://sublime-optimism-production-20d2.up.railway.app'; 
-    
-    // Ensure this matches your actual backend route (usually /api/auth/signup)
-    const response = await axios.post(`${baseUrl}/api/auth/signup`, {
-      phoneNumber,
-      password,
-      referralCode
-    });
+    const { phoneNumber, password, confirmPassword, referralCode } = formData;
 
-    console.log("Signup Success:", response.data);
-    alert("Account created successfully!");
-    navigate('/login'); 
+    if (!phoneNumber || !password || !confirmPassword) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-  } catch (error) {
-    const errormessage = error?.response?.data?.message || "Connection failed. Check your backend logs.";
-    console.error("Signup Error:", error);
-    alert(errormessage);
-  } finally {
-    setLoading(false);
-  }
-};
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const baseUrl = 'https://sublime-optimism-production-20d2.up.railway.app'; 
+      
+      const response = await axios.post(`${baseUrl}/api/auth/signup`, {
+        phoneNumber,
+        password,
+        referralCode
+      });
+
+      console.log("Signup Success:", response.data);
+      alert("Account created successfully!");
+      navigate('/login'); 
+
+    } catch (error) {
+      const errormessage = error?.response?.data?.message || "Connection failed. Check your backend logs.";
+      console.error("Signup Error:", error);
+      alert(errormessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-blue-50/30 flex items-center justify-center p-4 font-sans">
       <div className="max-w-5xl w-full bg-white rounded-[2.5rem] shadow-2xl shadow-blue-100/50 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
@@ -100,6 +107,12 @@ const handlesignup = async (e) => {
           <div className="mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Create an account</h2>
             <p className="text-gray-400 font-medium">Register to continue with us</p>
+            {/* Added a nice badge if a referral is detected */}
+            {formData.referralCode && (
+              <div className="mt-4 inline-flex items-center gap-2 bg-emerald-50 text-[#006B5E] px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
+                <Tag size={12} /> Referral Applied
+              </div>
+            )}
           </div>
 
           <form className="space-y-6" onSubmit={handlesignup}>
