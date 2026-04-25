@@ -62,7 +62,7 @@ const Sidebar = ({ isMenuOpen, toggleMenu, logoPath }) => {
           <SidebarLink 
             to="/team" 
             icon={<Users size={20}/>} 
-            label="Profile" 
+            label="Teams" 
             onClick={toggleMenu} 
           />
         </nav>
