@@ -12,7 +12,7 @@ const MyTeam = () => {
     const fetchTeam = async () => {
       try {
         // Using your interceptor-based api instance
-        const response = await api.get('/api/user/my-referrals');
+        const response = await api.get('/user/my-referrals');
         setReferrals(response.data.data || []);
       } catch (err) {
         console.error("Error fetching team:", err);
