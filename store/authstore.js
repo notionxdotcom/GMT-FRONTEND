@@ -10,17 +10,12 @@ const useAuthStore = create(
       isLoggedIn: false,
       loading: false,
 
-      // 1. BETTER SYNC: Remove the need for ID in URL if possible
-      // Usually, backend should get ID FROM THE COOKIE (JWT) 
-      // rather than the URL for security.
       syncAppData: async () => {
         const { isLoggedIn } = get();
         if (!isLoggedIn) return;
 
         set({ loading: true });
         try {
-          // If your backend is setup correctly, you shouldn't need to pass user._id
-          // The backend gets the ID from the decoded cookie/token.
           const [userRes, walletRes] = await Promise.all([
             api.get('/user/me'), 
             api.get('/wallet/my-balance')
@@ -40,25 +35,32 @@ const useAuthStore = create(
         }
       },
 
-      setAuth: (userData) => {
+      // Updated: Accept token from login response
+      setAuth: (userData, token) => {
+        if (token) {
+          localStorage.setItem('token', token); // Essential for the interceptor
+        }
         set({ 
           user: userData, 
           isLoggedIn: true 
         });
-        // Immediately sync data after logging in
         get().syncAppData();
       },
 
       logout: () => {
-        // Clear everything
+        // Clear the manual token
+        localStorage.removeItem('token'); 
+        // Clear the persisted state
         set({ user: null, wallet: { balance: 0, totalDeposit: 0 }, isLoggedIn: false });
-        // Use removeitem instead of clear to avoid nuking other app settings
         localStorage.removeItem('Notiox-auth-storage'); 
+        
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }),
     { 
       name: 'Notiox-auth-storage',
-      // Ensure the store is hydrated before trying to use it
       onRehydrateStorage: () => (state) => {
         if (state?.isLoggedIn) {
           state.syncAppData();

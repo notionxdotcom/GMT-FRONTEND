@@ -2,16 +2,21 @@ import axios from 'axios';
 import useAuthStore from './store/authstore';
 
 const api = axios.create({
-  baseURL:  'https://sublime-optimism-production-20d2.up.railway.app/api', 
-
-  withCredentials: true,
+  baseURL: 'https://sublime-optimism-production-20d2.up.railway.app/api', 
+  // withCredentials is no longer strictly needed for LocalStorage, 
+  // but you can keep it if you still use other cookie features.
 });
 
 // REQUEST INTERCEPTOR
 api.interceptors.request.use(
   (config) => {
-    // We don't manually set the Authorization header here.
-    // The browser handles the cookie injection because of withCredentials: true.
+    // Grab the token from LocalStorage
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      // Manually inject the token into the headers
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -21,15 +26,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If the backend returns 401, it means the cookie is missing, 
-    // expired, or invalid.
     if (error.response && error.response.status === 401) {
-      console.warn("Session expired. Logging out...");
+      console.warn("Session expired or invalid token. Logging out...");
+      
+      // Clear LocalStorage so the user stays logged out
+      localStorage.removeItem('token');
       
       const { logout } = useAuthStore.getState(); 
       logout();
-
-      // We don't need localStorage.removeItem('token') because there is no token in storage.
       
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';

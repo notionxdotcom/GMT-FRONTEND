@@ -54,7 +54,7 @@ const handleLogin = async (e) => {
       // If you have roles: 
       localStorage.setItem('user_role', response.data.user.role || 'user');
     }
-    setAuth(response.data.user);
+   setAuth(res.data.user, res.data.token);
 
     // 3. Parallel Sync: Fetch bank details and app data at the same time
     // This reduces total wait time significantly
