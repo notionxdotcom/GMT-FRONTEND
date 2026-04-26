@@ -103,7 +103,7 @@ const handleCopyCode = () => {
       {copied && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in duration-300">
           <IconCheck />
-          Referral Code Copied!
+          Referral Link Copied!
         </div>
       )}
 
@@ -156,7 +156,7 @@ const handleCopyCode = () => {
 
         {/* Action Buttons */}
         <section className="grid grid-cols-3 gap-3">
-          <ActionButton onClick={() => navigate('/recharge')} icon={<IconRecharge />} label="Recharge" color="bg-green-50 text-[#007B6E]" />
+          <ActionButton onClick={() => navigate('/deposit')} icon={<IconRecharge />} label="Recharge" color="bg-green-50 text-[#007B6E]" />
           <ActionButton onClick={() => navigate('/withdraw')} icon={<IconWithdraw />} label="Withdraw" color="bg-purple-50 text-[#7C3AED]" />
           <ActionButton onClick={handleCopyCode} icon={<IconInvite />} label="Invite" color="bg-blue-50 text-[#3B82F6]" />
         </section>
