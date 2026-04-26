@@ -70,7 +70,7 @@ function App() {
                 <Route path="/team" element={<MyTeam />} />
                 <Route path="/transactions" element={<TransactionHistory />} />
                   <Route path="/recharge-history" element={<DepositHistory />} />
-  <Route path="withdrawal-history" element={<WithdrawalHistory />} />
+  <Route path="/withdrawal-history" element={<WithdrawalHistory />} />
 
           </Route>
 
