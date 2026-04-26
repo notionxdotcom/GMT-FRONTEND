@@ -34,7 +34,7 @@ const TransactionHistory = () => {
   // Filter logic for search bar
   const filteredTransactions = transactions.filter(tx => 
     tx.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tx.type?.toLowerCase().includes(searchTerm.toLowerCase())
+    tx.entry_type?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

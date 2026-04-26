@@ -14,6 +14,8 @@ import BankAccountScreen from './components/bankdetails';
 import MyProducts from './components/myproducts';
 import MyTeam from './components/Myteam';
 import TransactionHistory from './components/Transactionhistory';
+import DepositHistory from './components/rechargehistory';
+import WithdrawalHistory from './components/withdrawalhistory';
 // Lazy Load Admin Components
 const MainAdminPortal = lazy(() => import('./components/Mainadminportal'));
 const TransactionScreen = lazy(() => import('./components/Transaction'));
@@ -67,6 +69,9 @@ function App() {
                <Route path="/products" element={<MyProducts />} />
                 <Route path="/team" element={<MyTeam />} />
                 <Route path="/transactions" element={<TransactionHistory />} />
+                  <Route path="/recharge-history" element={<DepositHistory />} />
+  <Route path="withdrawal-history" element={<WithdrawalHistory />} />
+
           </Route>
 
           {/* --- PROTECTED ADMIN ROUTES --- */}
