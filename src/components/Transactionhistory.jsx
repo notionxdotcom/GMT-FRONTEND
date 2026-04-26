@@ -87,7 +87,7 @@ const TransactionHistory = () => {
                     
                     <div>
                       <p className="font-bold text-gray-900 text-sm capitalize">
-                        {tx.type?.replace('_', ' ')}
+                        {tx.entry_type?.replace('_', ' ')}
                       </p>
                       <p className="text-[11px] text-gray-400 font-medium truncate max-w-[150px]">
                         {tx.description || 'No description'}
