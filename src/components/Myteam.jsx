@@ -26,7 +26,7 @@ const MyTeam = () => {
         const ledgerEntries = ledgerRes.data.data || [];
         const sum = ledgerEntries.reduce((acc, curr) => {
   // 1. Clean the type string (remove spaces and make lowercase)
-  const entryType = curr.type?.toLowerCase().trim();
+  const entryType = curr.entry_type?.toLowerCase().trim();
   
   // 2. Check for the match
   if (entryType === 'referral_commission') {
