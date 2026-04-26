@@ -41,12 +41,6 @@ const ListItem = ({ icon, label, subLabel, isDestructive, isExternal, onClick })
   </button>
 );
 
-const NavItem = ({ icon, label, active, onClick }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-1 ${active ? 'text-[#007B6E]' : 'text-gray-300'}`}>
-    {icon}
-    <span className="text-[10px] font-bold">{label}</span>
-  </button>
-);
 
 // --- 2. ICONS (SVGs) ---
 
@@ -187,14 +181,7 @@ const handleCopyCode = () => {
       </main>
 
       {/* Navigation Footer */}
-      <nav className="fixed bottom-6 left-0 right-0 flex justify-center px-5 z-50">
-        <div className="bg-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 px-8 py-3 flex justify-between items-center w-full max-w-[400px]">
-          <NavItem onClick={() => navigate('/dashboard')} icon={<IconHome />} label="Home" />
-          <NavItem icon={<IconProducts />} label="My Products" />
-          <NavItem icon={<IconTeams />} label="Teams" />
-          <NavItem icon={<IconUserActive />} label="Profile" active />
-        </div>
-      </nav>
+      
     </div>
   );
 }
