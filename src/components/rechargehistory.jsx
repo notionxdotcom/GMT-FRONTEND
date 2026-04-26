@@ -11,7 +11,7 @@ const DepositHistory = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get('/api/user/ledger');
+        const res = await api.get('/user/ledger');
         // Filter strictly for deposits and returns
         const deposits = (res.data.data || []).filter(tx => 
           ['deposit', 'investment_return'].includes(tx.entry_type?.toLowerCase().trim())
