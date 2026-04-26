@@ -73,7 +73,7 @@ const TransactionHistory = () => {
           <div className="space-y-4">
             {filteredTransactions.map((tx) => {
               // Determine if it's a credit or debit (fintech style)
-              const isCredit = ['deposit', 'referral_commission', 'investment_return'].includes(tx.type?.toLowerCase());
+              const isCredit = ['deposit', 'referral_commission'].includes(tx.entry_type?.toLowerCase());
               
               return (
                 <div key={tx.id} className="bg-white p-4 rounded-2xl border border-gray-50 shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all">
