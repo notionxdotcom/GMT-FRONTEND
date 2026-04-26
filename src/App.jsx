@@ -13,6 +13,7 @@ import ConfirmDeposit from './components/confirmdeposit';
 import BankAccountScreen from './components/bankdetails';
 import MyProducts from './components/myproducts';
 import MyTeam from './components/Myteam';
+import TransactionHistory from './components/Transactionhistory';
 // Lazy Load Admin Components
 const MainAdminPortal = lazy(() => import('./components/Mainadminportal'));
 const TransactionScreen = lazy(() => import('./components/Transaction'));
@@ -65,6 +66,7 @@ function App() {
             <Route path="/confirm-deposit" element={<ConfirmDeposit />} />
                <Route path="/products" element={<MyProducts />} />
                 <Route path="/team" element={<MyTeam />} />
+                <Route path="/transactions" element={<TransactionHistory />} />
           </Route>
 
           {/* --- PROTECTED ADMIN ROUTES --- */}

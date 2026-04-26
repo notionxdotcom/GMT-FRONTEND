@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowDownCircle, ArrowUpCircle, CalendarCheck, UserPlus, 
-  Zap, Copy, Menu, Bell, User, ChevronRight, Loader2 
+  Zap, Copy, Menu, Bell, User, ChevronRight, Loader2, History 
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
 import useAuthStore from '../../store/authstore';
 import api from '../../interceptor';
-import toast from 'react-hot-toast'; // Optional: for better notifications
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const logoPath = '/src/assets/logo.jpeg';
   const [activeTab, setActiveTab] = useState('Home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [dbProducts, setDbProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
-  const [buyingId, setBuyingId] = useState(null); // Track which product is being bought
+  const [buyingId, setBuyingId] = useState(null);
 
   const { user, wallet, syncAppData } = useAuthStore();
 
@@ -37,7 +38,6 @@ const Dashboard = () => {
     }
   };
 
-  // --- NEW BUY LOGIC ---
   const handleInvest = async (productId, productName) => {
     if (!window.confirm(`Confirm investment in ${productName}?`)) return;
 
@@ -46,14 +46,14 @@ const Dashboard = () => {
       const response = await api.post('/products/buy-product', { productId });
 
       if (response.data.success) {
-        alert("Success! Your investment is active. First yield in 24hrs.");
-        syncAppData(); // Refresh the wallet balance immediately
+        toast.success("Investment active! First yield in 24hrs.");
+        syncAppData(); 
       } else {
-        alert(response.data.message || "Purchase failed.");
+        toast.error(response.data.message || "Purchase failed.");
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || "Connection error. Try again.";
-      alert(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setBuyingId(null);
     }
@@ -62,6 +62,7 @@ const Dashboard = () => {
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.success("Referral code copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -76,6 +77,7 @@ const Dashboard = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
+        {/* Updated Header */}
         <header className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -89,17 +91,25 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            <button className="text-gray-400 hover:text-gray-600 relative p-2 bg-gray-50 rounded-full transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            {/* Transaction History Button */}
+            <button 
+              onClick={() => navigate('/transactions')}
+              className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative border border-transparent hover:border-emerald-100"
+            >
+              <History size={22} />
             </button>
+
             <div className="flex items-center gap-3 border-l pl-3 md:pl-6 border-gray-100">
               <div className="hidden md:block text-right">
                 <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '0000000000'}</p>
               </div>
-              <div className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E]">
+              {/* Profile Button */}
+              <button 
+                onClick={() => navigate('/profile')}
+                className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E] hover:bg-[#006B5E] hover:text-white transition-all active:scale-95 shadow-sm"
+              >
                 <User size={20} />
-              </div>
+              </button>
             </div>
           </div>
         </header>
@@ -137,10 +147,8 @@ const Dashboard = () => {
               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Platform Summary</h4>
               <div className="space-y-4">
                 <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
-             
                 <InfoRow label="Service Fee" value="20%" />
               </div>
-             
             </div>
           </div>
 
@@ -227,26 +235,5 @@ const InfoRow = ({ label, value }) => (
     <span className="text-sm font-black text-gray-800">{value}</span>
   </div>
 );
-
-const QuickAction = ({ icon, label, sub, color }) => {
-  const colors = {
-    emerald: 'bg-emerald-50 text-emerald-600',
-    purple: 'bg-purple-50 text-purple-600',
-    blue: 'bg-blue-50 text-blue-600',
-    amber: 'bg-amber-50 text-amber-600'
-  };
-
-  return (
-    <button className="w-full bg-white p-5 md:p-7 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center gap-3 hover:shadow-md hover:border-emerald-200 transition-all active:scale-95 group">
-      <div className={`w-14 h-14 ${colors[color]} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-        {React.cloneElement(icon, { size: 28 })}
-      </div>
-      <div className="text-center">
-        <p className="text-sm font-black text-gray-800">{label}</p>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{sub}</p>
-      </div>
-    </button>
-  );
-};
 
 export default Dashboard;
