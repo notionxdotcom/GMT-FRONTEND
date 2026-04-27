@@ -1,7 +1,7 @@
 import { useState, Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import './App.css'
-
+import { Toaster } from 'react-hot-toast';
 // User Components
 import RegistrationPage from './components/Register';
 import Dashboard from './components/Dashboard'
@@ -43,13 +43,16 @@ const AdminGuard = () => {
 function App() {
   return (
     <BrowserRouter>
+              <Toaster position="top-center" reverseOrder={false} /> 
       <Suspense fallback={
         <div className="h-screen flex flex-col items-center justify-center space-y-4">
           <div className="h-10 w-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
           <div className="font-bold text-slate-400">Loading NOTIONX...</div>
         </div>
       }>
+
         <Routes>
+ 
           {/* --- PUBLIC ROUTES --- */}
           <Route path="/" element={<Navigate to="/register" replace />} />
           <Route path="/register" element={<RegistrationPage />} />
