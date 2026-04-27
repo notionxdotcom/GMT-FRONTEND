@@ -6,7 +6,7 @@ const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      wallet: { balance: 0, totalDeposit: 0 },
+      wallet: null, // Start as null to avoid showing "₦0" while loading
       isLoggedIn: false,
       loading: false,
 
@@ -16,6 +16,7 @@ const useAuthStore = create(
 
         set({ loading: true });
         try {
+          // Use Promise.all to fetch both simultaneously
           const [userRes, walletRes] = await Promise.all([
             api.get('/user/me'), 
             api.get('/wallet/my-balance')
@@ -29,31 +30,44 @@ const useAuthStore = create(
         } catch (err) {
           console.error("Sync failed:", err);
           set({ loading: false });
+          
+          // If the token is invalid/expired, boot them out
           if (err.response?.status === 401) {
             get().logout();
           }
         }
       },
 
-      // Updated: Accept token from login response
       setAuth: (userData, token) => {
         if (token) {
-          localStorage.setItem('token', token); // Essential for the interceptor
+          localStorage.setItem('token', token);
         }
+        
         set({ 
           user: userData, 
           isLoggedIn: true 
         });
+
+        // Trigger sync immediately to get the FRESH wallet for THIS user
         get().syncAppData();
       },
 
       logout: () => {
-        // Clear the manual token
+        // 1. Remove tokens
         localStorage.removeItem('token'); 
-        // Clear the persisted state
-        set({ user: null, wallet: { balance: 0, totalDeposit: 0 }, isLoggedIn: false });
+        
+        // 2. Clear state completely (The "Nuclear" option to prevent ID mismatch)
+        set({ 
+          user: null, 
+          wallet: null, 
+          isLoggedIn: false, 
+          loading: false 
+        });
+
+        // 3. Purge the persisted storage
         localStorage.removeItem('Notiox-auth-storage'); 
         
+        // 4. Redirect
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
@@ -61,6 +75,7 @@ const useAuthStore = create(
     }),
     { 
       name: 'Notiox-auth-storage',
+      // This ensures that when the app reloads, we check if the user is still valid
       onRehydrateStorage: () => (state) => {
         if (state?.isLoggedIn) {
           state.syncAppData();
