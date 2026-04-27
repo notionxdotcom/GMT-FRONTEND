@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Zap, Copy, Menu, User, Loader2, History, CalendarCheck, CheckCircle
+  Zap, Copy, Menu, User, Loader2, History
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -18,59 +18,25 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
-  // States for Active Deposit logic
-  const [activeDeposit, setActiveDeposit] = useState(null);
-  const [cancelLoading, setCancelLoading] = useState(false);
-
   const { user, wallet, syncAppData } = useAuthStore();
 
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
-        // Grouping calls to ensure data is ready before spinner stops
+        // Only fetching essential app data and products
         await Promise.all([
           syncAppData(),
-          checkActiveDeposit(),
           fetchProducts()
         ]);
       } catch (error) {
         console.error("Initialization failed:", error);
       } finally {
-        // This is the KILL SWITCH for the loading spinner
         setProductsLoading(false);
       }
     };
 
     initializeDashboard();
   }, []);
-
-  const checkActiveDeposit = async () => {
-    try {
-      const response = await api.get('/wallet/active-deposit');
-      if (response.data.active) {
-        setActiveDeposit(response.data.deposit);
-      } else {
-        setActiveDeposit(null);
-      }
-    } catch (error) {
-      console.error("Failed to check active deposit:", error);
-    }
-  };
-
-  const handleCancelDeposit = async (id) => {
-    if (!window.confirm("Cancel this deposit request?")) return;
-    try {
-      setCancelLoading(true);
-      await api.post(`/wallet/cancel-deposit/${id}`);
-      toast.success("Deposit cancelled");
-      setActiveDeposit(null); 
-      syncAppData(); 
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to cancel");
-    } finally {
-      setCancelLoading(false);
-    }
-  };
 
   const fetchProducts = async () => {
     try {
@@ -128,7 +94,7 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative border border-transparent hover:border-emerald-100">
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative">
               <History size={22} />
             </button>
 
@@ -145,61 +111,6 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* --- ACTIVE DEPOSIT BANNER (Your Original UI Style) --- */}
-          {activeDeposit && (
-            <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${
-              activeDeposit.status === 'processing' ? 'bg-[#064E3B] border-emerald-400' : 'bg-[#1E293B] border-[#00D084]'
-            }`}>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/10 rounded-2xl">
-                  {/* Fixed Spinner: Only spins if processing */}
-                  {activeDeposit.status === 'processing' ? (
-                    <Loader2 className="text-[#00D084] animate-spin" size={24} />
-                  ) : (
-                    <CalendarCheck className="text-[#00D084]" size={24} />
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-bold text-lg">
-                    {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
-                  </h4>
-                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 w-full md:w-auto">
-                {activeDeposit.status === 'pending' && (
-                  <button 
-                    onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
-                    disabled={cancelLoading}
-                    className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
-                  >
-                    {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
-                  </button>
-                )}
-                <button 
-                  onClick={() => {
-                    if (activeDeposit.status === 'processing') {
-                      navigate('/transaction-status', { state: { deposit: activeDeposit } });
-                    } else {
-                      // Correctly mapping ledger_id to transactionId for the next page
-                      navigate('/confirm-deposit', { 
-                        state: { 
-                          amount: activeDeposit.amount, 
-                          reference: activeDeposit.description, 
-                          transactionId: activeDeposit.ledger_id 
-                        } 
-                      });
-                    }
-                  }}
-                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
-                >
-                  {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* BALANCE CARD SECTION */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
@@ -241,7 +152,6 @@ const Dashboard = () => {
           <section className="pb-12">
             <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-xl font-black text-gray-800">Available Investment Plans</h3>
-                <button onClick={fetchProducts} className="text-emerald-600 font-bold text-sm hover:underline">Refresh</button>
             </div>
             
             {productsLoading ? (
@@ -267,8 +177,6 @@ const Dashboard = () => {
   );
 };
 
-/* --- HELPER COMPONENTS (Keep at bottom) --- */
-
 const InfoRow = ({ label, value }) => (
   <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
     <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider">{label}</span>
@@ -277,14 +185,12 @@ const InfoRow = ({ label, value }) => (
 );
 
 const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
-  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
     </div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-wider">
-      Daily yield: {Number(pkg.daily_yield).toFixed(1)}%
-    </p>
+    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
     <div className="flex items-center justify-between">
       <div>
         <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Price</p>
@@ -293,9 +199,9 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
       <button 
         onClick={() => onInvest(pkg.id, pkg.name)} 
         disabled={isBuying} 
-        className="bg-[#006B5E] hover:bg-[#005F55] text-white px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+        className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
       >
-        {isBuying ? <Loader2 size={20} className="animate-spin" /> : 'Invest'}
+        {isBuying ? <Loader2 size={16} className="animate-spin" /> : 'Invest'}
       </button>
     </div>
   </div>
