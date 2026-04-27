@@ -126,25 +126,38 @@ const TransactionScreen = () => {
     </div>
   );
 };
-
 const TransactionRow = ({ txn, onAction, isProcessing }) => (
   <tr className="hover:bg-slate-50/50 transition cursor-default">
     <td className="px-6 py-5">
-     
       <p className="text-[10px] text-slate-400 font-mono">{txn.phone_number}</p>
     </td>
     <td className="px-6 py-5">
-      <span className="flex items-center gap-1 text-[10px] font-black tracking-tighter text-emerald-600 uppercase">
-        <ArrowDownLeft size={12}/> DEPOSIT
-      </span>
+      <div className="flex flex-col gap-1">
+        <span className="flex items-center gap-1 text-[10px] font-black tracking-tighter text-emerald-600 uppercase">
+          <ArrowDownLeft size={12}/> DEPOSIT
+        </span>
+        {/* Added Status Badge to show who actually paid */}
+        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full w-fit ${
+          txn.status === 'processing' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+        }`}>
+          {txn.status === 'processing' ? 'PAID / AWAITING' : 'INITIALIZED'}
+        </span>
+      </div>
     </td>
     <td className="px-6 py-5 font-black text-lg text-slate-900">₦{parseFloat(txn.amount).toLocaleString()}</td>
-    <td className="px-6 py-5 text-xs font-mono text-slate-500 font-bold uppercase">{txn.reference}</td>
+    <td className="px-6 py-5 text-xs font-mono text-slate-500 font-bold uppercase">
+      {txn.reference}
+    </td>
     <td className="px-6 py-5 flex justify-center gap-2">
       <button 
-        onClick={() => onAction(txn.id, 'approve')}
-        disabled={isProcessing}
-        className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
+        onClick={() => onAction(txn.ledger_id, 'approve')}
+        // Disable Approve if user hasn't clicked "I Have Paid" (still pending)
+        disabled={isProcessing || txn.status === 'pending'}
+        className={`px-4 py-1.5 rounded-lg text-xs font-bold text-white transition-all ${
+          txn.status === 'pending' 
+            ? 'bg-slate-300 cursor-not-allowed' 
+            : 'bg-emerald-600 hover:bg-emerald-700 shadow-md active:scale-95'
+        }`}
       >
         {isProcessing ? '...' : 'Approve'}
       </button>
