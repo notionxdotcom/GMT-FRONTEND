@@ -38,7 +38,7 @@ const ConfirmDeposit = () => {
     try {
       setLoading(true);
       // We only send the ID. The backend already knows the amount and reference from step 1.
-      await api.post('/wallet/request-approval', { transactionId });
+      await api.post('/wallet/requestdeposit', { transactionId });
       
       alert("Submission Successful! We are verifying your transfer.");
       navigate('/dashboard'); 
