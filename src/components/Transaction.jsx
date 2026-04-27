@@ -34,7 +34,7 @@ const TransactionScreen = () => {
       // Ensure these endpoints match your backend routes
       const endpoint = action === 'approve' 
         ? `/wallet/approve-deposit/${id}` 
-        : `/admin/reject-deposit/${id}`;
+        : `/wallet/reject-deposit/${id}`;
       
       await api.post(endpoint);
       
