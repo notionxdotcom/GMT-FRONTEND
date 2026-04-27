@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Zap, Copy, Menu, User, Loader2, History, XCircle
+  Zap, Copy, Menu, User, Loader2, History, CalendarCheck, CheckCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
-  // New States for Active Deposit logic
+  // States for Active Deposit logic
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
@@ -27,14 +27,16 @@ const Dashboard = () => {
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
-        // Run these to get data
-        await syncAppData();
-        await checkActiveDeposit();
-        await fetchProducts();
+        // Grouping calls to ensure data is ready before spinner stops
+        await Promise.all([
+          syncAppData(),
+          checkActiveDeposit(),
+          fetchProducts()
+        ]);
       } catch (error) {
         console.error("Initialization failed:", error);
       } finally {
-        // This stops the infinite loading regardless of success/error
+        // This is the KILL SWITCH for the loading spinner
         setProductsLoading(false);
       }
     };
@@ -143,14 +145,19 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* --- ACTIVE DEPOSIT BANNER --- */}
+          {/* --- ACTIVE DEPOSIT BANNER (Your Original UI Style) --- */}
           {activeDeposit && (
             <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${
               activeDeposit.status === 'processing' ? 'bg-[#064E3B] border-emerald-400' : 'bg-[#1E293B] border-[#00D084]'
             }`}>
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/10 rounded-2xl">
-                  <Loader2 className="text-[#00D084] animate-spin" size={24} />
+                  {/* Fixed Spinner: Only spins if processing */}
+                  {activeDeposit.status === 'processing' ? (
+                    <Loader2 className="text-[#00D084] animate-spin" size={24} />
+                  ) : (
+                    <CalendarCheck className="text-[#00D084]" size={24} />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-lg">
@@ -175,7 +182,14 @@ const Dashboard = () => {
                     if (activeDeposit.status === 'processing') {
                       navigate('/transaction-status', { state: { deposit: activeDeposit } });
                     } else {
-                      navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference: activeDeposit.description, transactionId: activeDeposit.ledger_id } });
+                      // Correctly mapping ledger_id to transactionId for the next page
+                      navigate('/confirm-payment', { 
+                        state: { 
+                          amount: activeDeposit.amount, 
+                          reference: activeDeposit.description, 
+                          transactionId: activeDeposit.ledger_id 
+                        } 
+                      });
                     }
                   }}
                   className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
@@ -253,7 +267,7 @@ const Dashboard = () => {
   );
 };
 
-/* --- HELPER COMPONENTS --- */
+/* --- HELPER COMPONENTS (Keep at bottom) --- */
 
 const InfoRow = ({ label, value }) => (
   <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
@@ -263,12 +277,14 @@ const InfoRow = ({ label, value }) => (
 );
 
 const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
-  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
     </div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
+    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-wider">
+      Daily yield: {Number(pkg.daily_yield).toFixed(1)}%
+    </p>
     <div className="flex items-center justify-between">
       <div>
         <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Price</p>
@@ -277,9 +293,9 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
       <button 
         onClick={() => onInvest(pkg.id, pkg.name)} 
         disabled={isBuying} 
-        className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
+        className="bg-[#006B5E] hover:bg-[#005F55] text-white px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
       >
-        {isBuying ? "..." : 'Invest'}
+        {isBuying ? <Loader2 size={20} className="animate-spin" /> : 'Invest'}
       </button>
     </div>
   </div>
