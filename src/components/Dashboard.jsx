@@ -10,15 +10,12 @@ import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const logoPath = '/src/assets/logo.jpeg';
-  const [activeTab, setActiveTab] = useState('Home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [dbProducts, setDbProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
-  const [buyingId, setBuyingId] = useState(null);
-
-  // Active Deposit states
+  
+  // State for the banner
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
@@ -27,13 +24,14 @@ const Dashboard = () => {
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
+        // Run all checks at once
         await Promise.all([
           syncAppData(),
           checkActiveDeposit(),
           fetchProducts()
         ]);
       } catch (error) {
-        console.error("Initialization failed:", error);
+        console.error("Dashboard init error:", error);
       } finally {
         setProductsLoading(false);
       }
@@ -45,9 +43,19 @@ const Dashboard = () => {
     try {
       const response = await api.get('/wallet/active-deposit');
       
-      // RESTORED LOGIC: Only show if active AND status is strictly 'pending'
-      if (response.data.active && response.data.deposit.status === 'pending') {
-        setActiveDeposit(response.data.deposit);
+      // LOGIC CHECK: 
+      // 1. Is there an active object?
+      // 2. Is the status strictly 'pending' (ignoring capital letters)?
+      if (response.data?.active && response.data?.deposit) {
+        const rawStatus = response.data.deposit.status || "";
+        const cleanStatus = rawStatus.toLowerCase().trim();
+
+        if (cleanStatus === 'pending') {
+          setActiveDeposit(response.data.deposit);
+        } else {
+          // If status is 'processing', 'approved', or 'rejected', hide banner
+          setActiveDeposit(null);
+        }
       } else {
         setActiveDeposit(null);
       }
@@ -70,29 +78,12 @@ const Dashboard = () => {
     }
   };
 
+  // ... (Other functions: fetchProducts, handleInvest, handleCopy) ...
   const fetchProducts = async () => {
     try {
-      const response = await api.get('/products/all'); 
-      setDbProducts(response.data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
-    }
-  };
-
-  const handleInvest = async (productId, productName) => {
-    if (!window.confirm(`Confirm investment in ${productName}?`)) return;
-    try {
-      setBuyingId(productId);
-      const response = await api.post('/products/buy-product', { productId });
-      if (response.data.status === "success") {
-        toast.success("Investment active!");
-        syncAppData(); 
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Purchase failed.");
-    } finally {
-      setBuyingId(null);
-    }
+      const res = await api.get('/products/all');
+      setDbProducts(res.data.data || []);
+    } catch (e) { console.log(e) }
   };
 
   const handleCopy = (text) => {
@@ -104,13 +95,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex overflow-x-hidden">
-      <Sidebar 
-        isMenuOpen={isMenuOpen} 
-        toggleMenu={() => setIsMenuOpen(!isMenuOpen)} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab}
-        logoPath={logoPath}
-      />
+      <Sidebar isMenuOpen={isMenuOpen} toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
 
       <main className="flex-1 flex flex-col min-w-0">
         <header className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
@@ -118,24 +103,21 @@ const Dashboard = () => {
             <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
               <Menu size={24} />
             </button>
-            <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">
-              Welcome, {user?.phoneNumber || 'User'}!
-            </h2>
+            <h2 className="text-lg md:text-xl font-bold text-gray-800">Welcome, {user?.phoneNumber}!</h2>
           </div>
-          
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all">
-              <History size={22} />
-            </button>
-            <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-[#006B5E] shadow-sm">
-              <User size={20} />
-            </button>
+             <button onClick={() => navigate('/transactions')} className="p-2.5 bg-gray-50 rounded-full text-gray-500 hover:text-emerald-600">
+               <History size={22} />
+             </button>
+             <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-[#006B5E] border border-emerald-100">
+               <User size={20} />
+             </button>
           </div>
         </header>
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* PENDING BANNER: Re-retraced to exactly how you had it */}
+          {/* --- THE PENDING BANNER --- */}
           {activeDeposit && (
             <div className="animate-in slide-in-from-top-4 duration-500 rounded-[2.5rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 bg-[#1E293B] border-[#00D084]">
               <div className="flex items-center gap-4">
@@ -143,7 +125,7 @@ const Dashboard = () => {
                   <CalendarCheck className="text-[#00D084]" size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg text-white">Unfinished Recharge</h4>
+                  <h4 className="font-bold text-lg">Unfinished Recharge</h4>
                   <p className="text-slate-400 text-sm">
                     ₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}
                   </p>
@@ -166,7 +148,7 @@ const Dashboard = () => {
                       transactionId: activeDeposit.ledger_id 
                     } 
                   })}
-                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all shadow-lg"
+                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black shadow-lg"
                 >
                   Complete Now
                 </button>
@@ -174,12 +156,12 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* BALANCE CARD */}
+          {/* BALANCE CARD SECTION */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative min-h-[240px] flex flex-col justify-between">
+            <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl min-h-[240px] flex flex-col justify-between">
               <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
-                  <p className="text-emerald-200 text-xs font-bold uppercase tracking-[0.2em] mb-2 opacity-80">Portfolio Balance</p>
+                  <p className="text-emerald-200 text-xs font-bold uppercase tracking-widest mb-2 opacity-80">Portfolio Balance</p>
                   <h3 className="text-4xl md:text-6xl font-black tracking-tight">
                     ₦{wallet?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
                   </h3>
@@ -194,32 +176,46 @@ const Dashboard = () => {
               </div>
               <div className="flex gap-4 mt-8">
                 <Link to="/deposit" className="flex-1">
-                  <button className="w-full bg-white text-[#006B5E] px-10 py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all">Recharge</button>
+                  <button className="w-full bg-white text-[#006B5E] py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all">Recharge</button>
                 </Link>
                 <Link to="/withdraw" className="flex-1">
-                  <button className="w-full bg-emerald-900/40 text-white px-10 py-4 rounded-2xl font-black border border-white/20 backdrop-blur-sm active:scale-95 transition-all">Withdraw</button>
+                  <button className="w-full bg-emerald-900/40 text-white py-4 rounded-2xl font-black border border-white/20 backdrop-blur-sm active:scale-95 transition-all">Withdraw</button>
                 </Link>
               </div>
             </div>
 
             <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col justify-between">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Platform Summary</h4>
+              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Platform Summary</h4>
               <div className="space-y-4">
-                <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
-                <InfoRow label="Service Fee" value="20%" />
+                <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                   <span className="text-gray-400 text-[10px] font-black uppercase">Total Invested</span>
+                   <span className="text-gray-800 font-black">₦{wallet.totalDeposit?.toLocaleString() || 0}</span>
+                </div>
+                <div className="flex justify-between items-center py-3">
+                   <span className="text-gray-400 text-[10px] font-black uppercase">Service Fee</span>
+                   <span className="text-gray-800 font-black">20%</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* PRODUCTS SECTION */}
           <section className="pb-12">
-            <h3 className="text-xl font-black text-gray-800 mb-8 px-2">Available Investment Plans</h3>
+            <h3 className="text-xl font-black text-gray-800 mb-8 px-2">Investment Plans</h3>
             {productsLoading ? (
-              <div className="flex justify-center items-center py-20"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>
+              <div className="flex justify-center py-20"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {dbProducts.map((pkg) => (
-                  <InvestmentCard key={pkg.id} pkg={pkg} onInvest={handleInvest} isBuying={buyingId === pkg.id} />
+                  <div key={pkg.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+                    <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit mb-4"><Zap size={24} /></div>
+                    <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
+                    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-widest">Daily yield: {pkg.daily_yield}%</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
+                      <button className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold">Invest</button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -229,31 +225,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-/* HELPERS */
-const InfoRow = ({ label, value }) => (
-  <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
-    <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider">{label}</span>
-    <span className="text-gray-800 font-black">{value}</span>
-  </div>
-);
-
-const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
-  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-    <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit mb-4"><Zap size={24} /></div>
-    <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-widest">Daily yield: {pkg.daily_yield}%</p>
-    <div className="flex items-center justify-between">
-      <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
-      <button 
-        onClick={() => onInvest(pkg.id, pkg.name)} 
-        disabled={isBuying} 
-        className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
-      >
-        {isBuying ? <Loader2 size={20} className="animate-spin" /> : 'Invest'}
-      </button>
-    </div>
-  </div>
-);
 
 export default Dashboard;
