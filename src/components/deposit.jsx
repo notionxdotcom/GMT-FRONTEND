@@ -20,7 +20,7 @@ const Deposit = () => {
     setLoading(true);
     try {
       // 1. Create the record in the DB before navigating
-      const res = await api.post('/wallet/initialize-deposit', { amount: finalAmount });
+      const res = await api.post('/wallet/initiate-deposit', { amount: finalAmount });
       
       // 2. Pass the ID and Reference from the DB to the next page
       navigate('/confirm-deposit', { 
