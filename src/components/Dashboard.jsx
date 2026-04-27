@@ -159,12 +159,7 @@ const Dashboard = () => {
                     <CalendarCheck className="text-[#00D084]" size={24} />
                   )}
                 </div>
-                <div>
-                  <h4 className="font-bold text-lg">
-                    {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
-                  </h4>
-                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
-                </div>
+              
               </div>
               
               <div className="flex gap-3 w-full md:w-auto">
