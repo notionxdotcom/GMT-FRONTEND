@@ -41,29 +41,34 @@ const Dashboard = () => {
   }, []);
 
   const checkActiveDeposit = async () => {
-    try {
-      const response = await api.get('/wallet/active-deposit');
+  try {
+    const response = await api.get('/wallet/active-deposit');
+    
+    // 1. Logic Trace: Is there data?
+    if (response?.data?.active && response?.data?.deposit) {
+      const dep = response.data.deposit;
       
-      // DEBUG: Check your browser console to see what the server returns
-      console.log("Active Deposit Response:", response.data);
+      // 2. Logic Trace: Clean the status string 
+      // This handles "Pending", "PENDING", or "pending "
+      const currentStatus = dep.status ? dep.status.toLowerCase().trim() : "";
 
-      if (response.data.active && response.data.deposit) {
-        const status = response.data.deposit.status.toLowerCase();
-        
-        // STRICT CHECK: Only show if it is exactly 'pending'
-        if (status === 'pending') {
-          setActiveDeposit(response.data.deposit);
-        } else {
-          setActiveDeposit(null);
-        }
+      console.log("Current Deposit Status:", currentStatus); // Check this in your F12 console
+
+      // 3. STRICT CHECK: Only show for pending
+      if (currentStatus === 'pending') {
+        setActiveDeposit(dep);
       } else {
+        // If it is 'processing', 'success', or 'rejected', we hide it
         setActiveDeposit(null);
       }
-    } catch (error) {
-      console.error("Failed to check active deposit:", error);
+    } else {
       setActiveDeposit(null);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching active deposit:", error);
+    setActiveDeposit(null);
+  }
+};
 
   const handleCancelDeposit = async (id) => {
     if (!window.confirm("Discard this deposit request?")) return;
