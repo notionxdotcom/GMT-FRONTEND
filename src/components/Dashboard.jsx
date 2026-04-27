@@ -179,11 +179,9 @@ const Dashboard = () => {
                 )}
                 <button 
                   onClick={() => {
-                    if (activeDeposit.status === 'processing') {
-                      navigate('/transaction-status', { state: { deposit: activeDeposit } });
-                    } else {
-                      // Correctly mapping ledger_id to transactionId for the next page
-                      navigate('/confirm-payment', { 
+                   
+                      
+                      navigate('/confirm-deposit', { 
                         state: { 
                           amount: activeDeposit.amount, 
                           reference: activeDeposit.description, 
@@ -191,7 +189,7 @@ const Dashboard = () => {
                         } 
                       });
                     }
-                  }}
+                  }
                   className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
                   {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
