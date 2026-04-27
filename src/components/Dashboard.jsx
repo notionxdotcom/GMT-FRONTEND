@@ -164,7 +164,7 @@ const Dashboard = () => {
                   </button>
                 )}
                 <button 
-                  onClick={() => navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference: activeDeposit.description.split(': ')[1] || 'REF', transactionId: activeDeposit.ledger_id } })}
+                  onClick={() => navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference:  activeDeposit.description, transactionId: activeDeposit.ledger_id } })}
                   className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
                   {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
