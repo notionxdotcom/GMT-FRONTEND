@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
-  // New States for Active Deposit
+  // States for the Pending Deposit Banner
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
@@ -28,9 +28,10 @@ const Dashboard = () => {
   useEffect(() => {
     syncAppData(); 
     fetchProducts();
-    checkActiveDeposit(); // Check for pending deposits on mount
+    checkActiveDeposit(); 
   }, []);
 
+  // Hits the route: router.get('/active-deposit', verifyToken, getActiveDeposit)
   const checkActiveDeposit = async () => {
     try {
       const response = await api.get('/wallet/active-deposit');
@@ -40,18 +41,18 @@ const Dashboard = () => {
         setActiveDeposit(null);
       }
     } catch (error) {
-      console.error("Failed to check active deposit:", error);
+      console.error("Dashboard: Error checking pending deposits", error);
     }
   };
 
   const handleCancelDeposit = async (id) => {
-    if (!window.confirm("Cancel this deposit request?")) return;
+    if (!window.confirm("Do you want to discard this deposit request?")) return;
     try {
       setCancelLoading(true);
       await api.post(`/wallet/cancel-deposit/${id}`);
-      toast.success("Deposit cancelled");
-      setActiveDeposit(null); // Clear the banner
-      syncAppData(); // Refresh balance
+      toast.success("Request cancelled successfully");
+      setActiveDeposit(null); 
+      syncAppData(); 
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to cancel");
     } finally {
@@ -77,14 +78,11 @@ const Dashboard = () => {
       setBuyingId(productId);
       const response = await api.post('/products/buy-product', { productId });
       if (response.data.status === "success") {
-        toast.success("Investment active! First yield in 24hrs.");
+        toast.success("Investment active!");
         syncAppData(); 
-      } else {
-        toast.error(response.data.message || "Purchase failed.");
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Connection error. Try again.";
-      toast.error(errorMsg);
+      toast.error(error.response?.data?.message || "Purchase failed.");
     } finally {
       setBuyingId(null);
     }
@@ -98,7 +96,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex overflow-x-hidden">
+    <div className="min-h-screen bg-[#F3F4F6] flex overflow-x-hidden font-sans">
       <Sidebar 
         isMenuOpen={isMenuOpen} 
         toggleMenu={() => setIsMenuOpen(!isMenuOpen)} 
@@ -110,24 +108,24 @@ const Dashboard = () => {
       <main className="flex-1 flex flex-col min-w-0">
         <header className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               <Menu size={24} />
             </button>
             <div className="hidden sm:block">
               <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">
-                Welcome, {user?.phoneNumber || 'User'}!
+                Hi, {user?.phoneNumber || 'User'}!
               </h2>
             </div>
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative border border-transparent hover:border-emerald-100">
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all border border-transparent hover:border-emerald-100">
               <History size={22} />
             </button>
 
             <div className="flex items-center gap-3 border-l pl-3 md:pl-6 border-gray-100">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '0000000000'}</p>
+                <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '080...'}</p>
               </div>
               <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E] hover:bg-[#006B5E] hover:text-white transition-all shadow-sm">
                 <User size={20} />
@@ -138,42 +136,47 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* --- RESUME DEPOSIT BANNER --- */}
+          {/* --- ACTIVE DEPOSIT BANNER (OPay Style) --- */}
           {activeDeposit && (
-            <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${activeDeposit.status === 'processing' ? 'bg-[#064E3B] border-emerald-400' : 'bg-[#1E293B] border-[#00D084]'}`}>
+            <div className="animate-in slide-in-from-top-4 fade-in duration-500 rounded-[2rem] p-6 bg-[#1E293B] text-white shadow-xl border-l-8 border-[#00D084] flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/10 rounded-2xl">
                   <Loader2 className="text-[#00D084] animate-spin" size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg">
-                    {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
-                  </h4>
-                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()}</p>
+                  <h4 className="font-bold text-lg leading-tight text-white">Unfinished Recharge</h4>
+                  <p className="text-slate-400 text-sm font-medium">
+                    ₦{Number(activeDeposit.amount).toLocaleString()} • Ref: <span className="text-emerald-400">{activeDeposit.description}</span>
+                  </p>
                 </div>
               </div>
               
               <div className="flex gap-3 w-full md:w-auto">
-                {activeDeposit.status === 'pending' && (
-                  <button 
-                    onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
-                    disabled={cancelLoading}
-                    className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
-                  >
-                    {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : <><XCircle size={16}/> Cancel</>}
-                  </button>
-                )}
                 <button 
-                  onClick={() => navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference:  activeDeposit.description, transactionId: activeDeposit.ledger_id } })}
+                  onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
+                  disabled={cancelLoading}
+                  className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2 hover:bg-white/5 active:scale-95 disabled:opacity-50"
+                >
+                  {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
+                </button>
+
+                <button 
+                  onClick={() => navigate('/confirm-payment', { 
+                    state: { 
+                      amount: activeDeposit.amount, 
+                      reference: activeDeposit.description, 
+                      transactionId: activeDeposit.ledger_id 
+                    } 
+                  })}
                   className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
-                  {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
+                  Complete Now
                 </button>
               </div>
             </div>
           )}
 
-          {/* Balance Card Section */}
+          {/* Portfolio Balance Card */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-4">
@@ -186,7 +189,7 @@ const Dashboard = () => {
                 <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 w-full md:w-auto cursor-pointer" onClick={() => handleCopy(user?.referral_code)}>
                   <p className="text-[10px] uppercase font-black text-emerald-100 mb-1">Referral ID</p>
                   <div className="flex items-center justify-between md:justify-start gap-4">
-                    <span className="font-bold tracking-widest text-lg">{user?.referral_code || '-------'}</span>
+                    <span className="font-bold tracking-widest text-lg">{user?.referral_code || '---'}</span>
                     <Copy size={16} className={copied ? "text-emerald-300" : "text-white"} />
                   </div>
                 </div>
@@ -202,18 +205,18 @@ const Dashboard = () => {
             </div>
 
             <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col justify-between">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Platform Summary</h4>
+              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Stats</h4>
               <div className="space-y-4">
                 <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
-                <InfoRow label="Service Fee" value="20%" />
+                <InfoRow label="Platform Fee" value="20%" />
               </div>
             </div>
           </div>
 
-          {/* Investment Plans Section */}
+          {/* Investment Section */}
           <section className="pb-12">
             <div className="flex items-center justify-between mb-8 px-2">
-                <h3 className="text-xl font-black text-gray-800">Available Investment Plans</h3>
+                <h3 className="text-xl font-black text-gray-800">Hot Deals 🔥</h3>
                 <button onClick={fetchProducts} className="text-emerald-600 font-bold text-sm hover:underline">Refresh</button>
             </div>
             
@@ -227,7 +230,6 @@ const Dashboard = () => {
                   <InvestmentCard 
                     key={pkg.id || i} 
                     pkg={pkg} 
-                    index={i} 
                     onInvest={handleInvest}
                     isBuying={buyingId === pkg.id} 
                   />
@@ -241,4 +243,36 @@ const Dashboard = () => {
   );
 };
 
-// ... keep InvestmentCard, StatBox, and InfoRow helper components as they were
+// Helper Components
+const InfoRow = ({ label, value }) => (
+  <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+    <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">{label}</span>
+    <span className="text-gray-800 font-black">{value}</span>
+  </div>
+);
+
+const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
+  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+    <div className="flex justify-between items-start mb-4">
+      <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
+      <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase">VIP {pkg.vip_level || 1}</span>
+    </div>
+    <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
+    <p className="text-gray-400 text-xs mb-6">Daily yield: {pkg.daily_yield}%</p>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-[10px] text-gray-400 uppercase font-black">Price</p>
+        <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
+      </div>
+      <button 
+        onClick={() => onInvest(pkg.id, pkg.name)}
+        disabled={isBuying}
+        className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#005F55] transition-all disabled:opacity-50"
+      >
+        {isBuying ? <Loader2 className="animate-spin" size={20} /> : 'Invest Now'}
+      </button>
+    </div>
+  </div>
+);
+
+export default Dashboard;
