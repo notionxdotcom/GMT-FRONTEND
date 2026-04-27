@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Zap, Copy, Menu, User, Loader2, History
+  Zap, Copy, Menu, User, Loader2, History, CalendarCheck
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -18,14 +18,18 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
+  // States for Active Deposit logic
+  const [activeDeposit, setActiveDeposit] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+
   const { user, wallet, syncAppData } = useAuthStore();
 
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
-        // Only fetching essential app data and products
         await Promise.all([
           syncAppData(),
+          checkActiveDeposit(),
           fetchProducts()
         ]);
       } catch (error) {
@@ -34,16 +38,44 @@ const Dashboard = () => {
         setProductsLoading(false);
       }
     };
-
     initializeDashboard();
   }, []);
+
+  const checkActiveDeposit = async () => {
+    try {
+      const response = await api.get('/wallet/active-deposit');
+      // ONLY show the banner if the status is 'pending'
+      // If it is 'processing', 'success', or 'failed', we don't show the banner
+      if (response.data.active && response.data.deposit.status === 'pending') {
+        setActiveDeposit(response.data.deposit);
+      } else {
+        setActiveDeposit(null);
+      }
+    } catch (error) {
+      console.error("Failed to check active deposit:", error);
+    }
+  };
+
+  const handleCancelDeposit = async (id) => {
+    if (!window.confirm("Cancel this deposit request?")) return;
+    try {
+      setCancelLoading(true);
+      await api.post(`/wallet/cancel-deposit/${id}`);
+      toast.success("Deposit cancelled");
+      setActiveDeposit(null); 
+    } catch (error) {
+      toast.error("Failed to cancel");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
       const response = await api.get('/products/all'); 
       setDbProducts(response.data.data || []);
     } catch (error) {
-      console.error("Failed to fetch investment plans:", error);
+      console.error("Failed to fetch products:", error);
     }
   };
 
@@ -94,14 +126,11 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative">
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all border border-transparent hover:border-emerald-100">
               <History size={22} />
             </button>
 
             <div className="flex items-center gap-3 border-l pl-3 md:pl-6 border-gray-100">
-              <div className="hidden md:block text-right">
-                <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '0000000000'}</p>
-              </div>
               <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E] hover:bg-[#006B5E] hover:text-white transition-all shadow-sm">
                 <User size={20} />
               </button>
@@ -111,6 +140,43 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
+          {/* --- PENDING DEPOSIT BANNER (Only shows when status is 'pending') --- */}
+          {activeDeposit && (
+            <div className="animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 bg-[#1E293B] border-[#00D084]">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/10 rounded-2xl">
+                  <CalendarCheck className="text-[#00D084]" size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg text-white">Unfinished Recharge</h4>
+                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 w-full md:w-auto">
+                <button 
+                  onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
+                  disabled={cancelLoading}
+                  className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
+                >
+                  {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
+                </button>
+                <button 
+                  onClick={() => navigate('/confirm-deposit', { 
+                    state: { 
+                      amount: activeDeposit.amount, 
+                      reference: activeDeposit.description, 
+                      transactionId: activeDeposit.ledger_id 
+                    } 
+                  })}
+                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all shadow-lg shadow-emerald-900/20"
+                >
+                  Complete Now
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* BALANCE CARD SECTION */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
@@ -150,19 +216,16 @@ const Dashboard = () => {
 
           {/* INVESTMENT PLANS SECTION */}
           <section className="pb-12">
-            <div className="flex items-center justify-between mb-8 px-2">
-                <h3 className="text-xl font-black text-gray-800">Available Investment Plans</h3>
-            </div>
-            
+            <h3 className="text-xl font-black text-gray-800 mb-8 px-2">Available Investment Plans</h3>
             {productsLoading ? (
               <div className="flex justify-center items-center py-20">
                 <Loader2 className="animate-spin text-emerald-600" size={40} />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {dbProducts.map((pkg, i) => (
+                {dbProducts.map((pkg) => (
                   <InvestmentCard 
-                    key={pkg.id || i} 
+                    key={pkg.id} 
                     pkg={pkg} 
                     onInvest={handleInvest}
                     isBuying={buyingId === pkg.id} 
@@ -177,6 +240,7 @@ const Dashboard = () => {
   );
 };
 
+/* HELPER COMPONENTS */
 const InfoRow = ({ label, value }) => (
   <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
     <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider">{label}</span>
@@ -186,14 +250,11 @@ const InfoRow = ({ label, value }) => (
 
 const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
   <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
-    </div>
+    <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit mb-4"><Zap size={24} /></div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
+    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-wider">Daily yield: {pkg.daily_yield}%</p>
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Price</p>
         <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
       </div>
       <button 
@@ -201,7 +262,7 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
         disabled={isBuying} 
         className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
       >
-        {isBuying ? <Loader2 size={16} className="animate-spin" /> : 'Invest'}
+        {isBuying ? <Loader2 size={20} className="animate-spin" /> : 'Invest'}
       </button>
     </div>
   </div>
