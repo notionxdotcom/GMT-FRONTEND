@@ -45,7 +45,7 @@ const Dashboard = () => {
       setBuyingId(productId);
       const response = await api.post('/products/buy-product', { productId });
 
-      if (response.data.status) {
+      if (response.data.status==="success") {
         toast.success("Investment active! First yield in 24hrs.");
         syncAppData(); 
       } else {
