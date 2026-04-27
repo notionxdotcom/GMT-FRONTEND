@@ -8,10 +8,10 @@ const ConfirmDeposit = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Data passed from the selection page
+  // Extracting data safely from location.state
   const amount = location.state?.amount;
   const reference = location.state?.reference;
-  const transactionId = location.state?.transactionId; // This should be the ledger_id
+  const transactionId = location.state?.transactionId;
 
   const [copied, setCopied] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,11 +24,15 @@ const ConfirmDeposit = () => {
   };
 
   useEffect(() => {
-    // Redirect if direct access without state
-    if (!amount || !transactionId) {
-      navigate('/deposit');
+    // FIX: Only redirect if we are SURE there is no data and no state.
+    // If we redirect to /deposit and /deposit is protected, 
+    // the Auth Guard might be the one sending you to Register/Sign-up.
+    if (!location.state || !transactionId) {
+      console.warn("No transaction state found. Redirecting to deposit selection.");
+      // Use replace: true so the user can't "Go Back" into an empty state
+      navigate('/deposit', { replace: true });
     }
-  }, [amount, transactionId, navigate]);
+  }, [location.state, transactionId, navigate]);
 
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text);
@@ -42,7 +46,7 @@ const ConfirmDeposit = () => {
     
     try {
       setLoading(true);
-      // Hits the commitment wall: status moves from 'pending' to 'processing'
+      // Moves status from 'pending' to 'processing'
       await api.post('/wallet/requestdeposit', { transactionId });
       
       toast.success("Submission Successful! Verifying transfer.");
@@ -72,7 +76,8 @@ const ConfirmDeposit = () => {
     }
   };
 
-  if (!amount) return null;
+  // Prevent rendering the UI if we don't have the required data
+  if (!transactionId) return null;
 
   return (
     <div className="min-h-screen bg-[#002B2B] text-white p-4 max-w-md mx-auto">
@@ -91,7 +96,7 @@ const ConfirmDeposit = () => {
       {/* Instruction Box */}
       <div className="bg-yellow-50/10 border border-yellow-500/20 p-4 rounded-2xl mb-6 flex gap-3 text-yellow-100 text-xs">
         <Info className="text-yellow-400 shrink-0" size={18} />
-        <p>Transfer exactly <b>₦{amount.toLocaleString()}</b> and use the reference below as your narration.</p>
+        <p>Transfer exactly <b>₦{Number(amount).toLocaleString()}</b> and use the reference below as your narration.</p>
       </div>
 
       {/* Bank Details Card */}
@@ -107,7 +112,7 @@ const ConfirmDeposit = () => {
         />
         <DetailRow 
           label="Exact Amount" 
-          value={`₦${amount.toLocaleString()}`} 
+          value={`₦${Number(amount).toLocaleString()}`} 
           copyable 
           onCopy={() => handleCopy(amount.toString(), "amt")}
           isCopied={copied === "amt"}
@@ -141,7 +146,6 @@ const ConfirmDeposit = () => {
           )}
         </button>
 
-        {/* The Cancel Option - Only visible if not already submitting */}
         {!loading && (
           <button 
             onClick={handleCancel}
@@ -157,7 +161,6 @@ const ConfirmDeposit = () => {
         )}
       </div>
 
-      {/* Security Disclaimer */}
       <p className="text-[10px] text-slate-500 text-center mt-6 px-4 uppercase font-bold tracking-wider">
         Secure transaction powered by Upnepa Ledger System
       </p>
