@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
+  // Active Deposit states
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
@@ -41,34 +42,19 @@ const Dashboard = () => {
   }, []);
 
   const checkActiveDeposit = async () => {
-  try {
-    const response = await api.get('/wallet/active-deposit');
-    
-    // 1. Logic Trace: Is there data?
-    if (response?.data?.active && response?.data?.deposit) {
-      const dep = response.data.deposit;
+    try {
+      const response = await api.get('/wallet/active-deposit');
       
-      // 2. Logic Trace: Clean the status string 
-      // This handles "Pending", "PENDING", or "pending "
-      const currentStatus = dep.status ? dep.status.toLowerCase().trim() : "";
-
-      console.log("Current Deposit Status:", currentStatus); // Check this in your F12 console
-
-      // 3. STRICT CHECK: Only show for pending
-      if (currentStatus === 'pending') {
-        setActiveDeposit(dep);
+      // RESTORED LOGIC: Only show if active AND status is strictly 'pending'
+      if (response.data.active && response.data.deposit.status === 'pending') {
+        setActiveDeposit(response.data.deposit);
       } else {
-        // If it is 'processing', 'success', or 'rejected', we hide it
         setActiveDeposit(null);
       }
-    } else {
+    } catch (error) {
       setActiveDeposit(null);
     }
-  } catch (error) {
-    console.error("Error fetching active deposit:", error);
-    setActiveDeposit(null);
-  }
-};
+  };
 
   const handleCancelDeposit = async (id) => {
     if (!window.confirm("Discard this deposit request?")) return;
@@ -78,7 +64,7 @@ const Dashboard = () => {
       toast.success("Deposit cancelled");
       setActiveDeposit(null); 
     } catch (error) {
-      toast.error("Failed to cancel request");
+      toast.error("Could not cancel request.");
     } finally {
       setCancelLoading(false);
     }
@@ -132,13 +118,13 @@ const Dashboard = () => {
             <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
               <Menu size={24} />
             </button>
-            <h2 className="text-lg md:text-xl font-bold text-gray-800">
+            <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">
               Welcome, {user?.phoneNumber || 'User'}!
             </h2>
           </div>
           
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 p-2.5 bg-gray-50 rounded-full">
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all">
               <History size={22} />
             </button>
             <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-[#006B5E] shadow-sm">
@@ -149,16 +135,18 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* BANNER: Only shows if state is PENDING */}
+          {/* PENDING BANNER: Re-retraced to exactly how you had it */}
           {activeDeposit && (
-            <div className="animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 bg-[#1E293B] border-[#00D084]">
+            <div className="animate-in slide-in-from-top-4 duration-500 rounded-[2.5rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 bg-[#1E293B] border-[#00D084]">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/10 rounded-2xl">
                   <CalendarCheck className="text-[#00D084]" size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg">Unfinished Recharge</h4>
-                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
+                  <h4 className="font-bold text-lg text-white">Unfinished Recharge</h4>
+                  <p className="text-slate-400 text-sm">
+                    ₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}
+                  </p>
                 </div>
               </div>
               
@@ -166,9 +154,9 @@ const Dashboard = () => {
                 <button 
                   onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
                   disabled={cancelLoading}
-                  className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all min-w-[100px]"
+                  className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
                 >
-                  {cancelLoading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Cancel"}
+                  {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
                 </button>
                 <button 
                   onClick={() => navigate('/confirm-deposit', { 
@@ -178,7 +166,7 @@ const Dashboard = () => {
                       transactionId: activeDeposit.ledger_id 
                     } 
                   })}
-                  className="bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black shadow-lg"
+                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all shadow-lg"
                 >
                   Complete Now
                 </button>
@@ -186,12 +174,12 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* BALANCE SECTION */}
+          {/* BALANCE CARD */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl min-h-[240px] flex flex-col justify-between">
+            <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative min-h-[240px] flex flex-col justify-between">
               <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
-                  <p className="text-emerald-200 text-xs font-bold uppercase tracking-widest mb-2 opacity-80">Portfolio Balance</p>
+                  <p className="text-emerald-200 text-xs font-bold uppercase tracking-[0.2em] mb-2 opacity-80">Portfolio Balance</p>
                   <h3 className="text-4xl md:text-6xl font-black tracking-tight">
                     ₦{wallet?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
                   </h3>
@@ -205,17 +193,17 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="flex gap-4 mt-8">
-                <Link to="/deposit" className="flex-1 md:flex-none">
+                <Link to="/deposit" className="flex-1">
                   <button className="w-full bg-white text-[#006B5E] px-10 py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all">Recharge</button>
                 </Link>
-                <Link to="/withdraw" className="flex-1 md:flex-none">
+                <Link to="/withdraw" className="flex-1">
                   <button className="w-full bg-emerald-900/40 text-white px-10 py-4 rounded-2xl font-black border border-white/20 backdrop-blur-sm active:scale-95 transition-all">Withdraw</button>
                 </Link>
               </div>
             </div>
 
             <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col justify-between">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Platform Summary</h4>
+              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Platform Summary</h4>
               <div className="space-y-4">
                 <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
                 <InfoRow label="Service Fee" value="20%" />
@@ -227,9 +215,7 @@ const Dashboard = () => {
           <section className="pb-12">
             <h3 className="text-xl font-black text-gray-800 mb-8 px-2">Available Investment Plans</h3>
             {productsLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 className="animate-spin text-emerald-600" size={40} />
-              </div>
+              <div className="flex justify-center items-center py-20"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {dbProducts.map((pkg) => (
@@ -256,7 +242,7 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
   <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
     <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit mb-4"><Zap size={24} /></div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
+    <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-widest">Daily yield: {pkg.daily_yield}%</p>
     <div className="flex items-center justify-between">
       <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
       <button 
