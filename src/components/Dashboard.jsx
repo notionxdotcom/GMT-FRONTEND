@@ -19,16 +19,19 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
-  // LOGIC ONLY: Active Deposit States
+  // Added logic for Pending Deposit
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
   const { user, wallet, syncAppData } = useAuthStore();
 
   useEffect(() => {
-    syncAppData(); 
-    fetchProducts();
-    checkActiveDeposit(); 
+    const initDashboard = async () => {
+      await syncAppData(); 
+      await fetchProducts();
+      await checkActiveDeposit(); 
+    };
+    initDashboard();
   }, []);
 
   const checkActiveDeposit = async () => {
@@ -40,12 +43,13 @@ const Dashboard = () => {
         setActiveDeposit(null);
       }
     } catch (error) {
-      console.error("Error checking pending deposits", error);
+      console.error("Check deposit error:", error);
+      setActiveDeposit(null);
     }
   };
 
   const handleCancelDeposit = async (id) => {
-    if (!window.confirm("Cancel this deposit request?")) return;
+    if (!window.confirm("Cancel this deposit?")) return;
     try {
       setCancelLoading(true);
       await api.post(`/wallet/cancel-deposit/${id}`);
@@ -53,7 +57,7 @@ const Dashboard = () => {
       setActiveDeposit(null); 
       syncAppData(); 
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed");
+      toast.error("Failed to cancel");
     } finally {
       setCancelLoading(false);
     }
@@ -65,7 +69,7 @@ const Dashboard = () => {
       const response = await api.get('/products/all'); 
       setDbProducts(response.data.data || []);
     } catch (error) {
-      console.error("Failed to fetch products:", error);
+      console.error("Failed products:", error);
     } finally {
       setProductsLoading(false);
     }
@@ -77,11 +81,11 @@ const Dashboard = () => {
       setBuyingId(productId);
       const response = await api.post('/products/buy-product', { productId });
       if (response.data.status === "success") {
-        toast.success("Success!");
+        toast.success("Investment successful");
         syncAppData(); 
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed");
+      toast.error(error.response?.data?.message || "Purchase failed.");
     } finally {
       setBuyingId(null);
     }
@@ -111,22 +115,21 @@ const Dashboard = () => {
               <Menu size={24} />
             </button>
             <div className="hidden sm:block">
-              <h2 className="text-lg md:text-xl font-bold text-gray-800">
+              <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">
                 Welcome, {user?.phoneNumber || 'User'}!
               </h2>
             </div>
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 rounded-full">
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all">
               <History size={22} />
             </button>
-
-            <div className="flex items-center gap-3 border-l pl-3 border-gray-100">
+            <div className="flex items-center gap-3 border-l pl-3 md:pl-6 border-gray-100">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-black text-gray-800">{user?.phoneNumber}</p>
+                <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '000'}</p>
               </div>
-              <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-[#006B5E]">
+              <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E]">
                 <User size={20} />
               </button>
             </div>
@@ -135,38 +138,30 @@ const Dashboard = () => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* BANNER ADDED HERE - REWRITTEN TO BE SIMPLE */}
+          {/* --- RESUME DEPOSIT BANNER (Simple Design) --- */}
           {activeDeposit && (
-            <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
-                  <Loader2 className="animate-spin" size={24} />
+                <div className="p-3 bg-emerald-50 rounded-2xl">
+                  <Loader2 className="text-[#00D084] animate-spin" size={24} />
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-800">Unfinished Recharge</h4>
-                  <p className="text-gray-500 text-sm">
-                    ₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}
-                  </p>
+                  <p className="text-gray-500 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
                 </div>
               </div>
               
               <div className="flex gap-3 w-full md:w-auto">
                 <button 
                   onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
+                  className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-gray-400 border border-gray-200"
                   disabled={cancelLoading}
-                  className="flex-1 px-6 py-3 rounded-xl font-bold text-gray-400 border border-gray-200 hover:bg-gray-50"
                 >
                   {cancelLoading ? "..." : "Cancel"}
                 </button>
                 <button 
-                  onClick={() => navigate('/confirm-payment', { 
-                    state: { 
-                      amount: activeDeposit.amount, 
-                      reference: activeDeposit.description, 
-                      transactionId: activeDeposit.ledger_id 
-                    } 
-                  })}
-                  className="flex-1 bg-[#00D084] text-white px-8 py-3 rounded-xl font-bold"
+                  onClick={() => navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference: activeDeposit.description, transactionId: activeDeposit.ledger_id } })}
+                  className="flex-1 md:flex-none bg-[#00D084] text-white px-8 py-3 rounded-xl font-bold shadow-lg"
                 >
                   Complete Now
                 </button>
@@ -174,7 +169,7 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Rest of your original UI code exactly as it was... */}
+          {/* BALANCE CARD SECTION */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-4">
@@ -187,7 +182,7 @@ const Dashboard = () => {
                 <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 w-full md:w-auto cursor-pointer" onClick={() => handleCopy(user?.referral_code)}>
                   <p className="text-[10px] uppercase font-black text-emerald-100 mb-1">Referral ID</p>
                   <div className="flex items-center justify-between md:justify-start gap-4">
-                    <span className="font-bold tracking-widest text-lg">{user?.referral_code || '---'}</span>
+                    <span className="font-bold tracking-widest text-lg">{user?.referral_code || '-------'}</span>
                     <Copy size={16} className={copied ? "text-emerald-300" : "text-white"} />
                   </div>
                 </div>
@@ -206,14 +201,15 @@ const Dashboard = () => {
               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Stats</h4>
               <div className="space-y-4">
                 <InfoRow label="Total Invested" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
-                <InfoRow label="Platform Fee" value="20%" />
+                <InfoRow label="Service Fee" value="20%" />
               </div>
             </div>
           </div>
 
+          {/* PRODUCTS SECTION */}
           <section className="pb-12">
             <div className="flex items-center justify-between mb-8 px-2">
-                <h3 className="text-xl font-black text-gray-800">Investment Plans</h3>
+                <h3 className="text-xl font-black text-gray-800">Available Plans</h3>
                 <button onClick={fetchProducts} className="text-emerald-600 font-bold text-sm">Refresh</button>
             </div>
             
@@ -246,10 +242,10 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
       <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
     </div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
-    <p className="text-gray-400 text-xs mb-6">Daily yield: {pkg.daily_yield}%</p>
+    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-[10px] text-gray-400 uppercase font-black">Price</p>
+        <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Price</p>
         <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
       </div>
       <button onClick={() => onInvest(pkg.id, pkg.name)} disabled={isBuying} className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold">
