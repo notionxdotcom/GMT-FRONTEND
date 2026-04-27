@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowDownCircle, ArrowUpCircle, CalendarCheck, UserPlus, 
-  Zap, Copy, Menu, Bell, User, ChevronRight, Loader2, History, XCircle
+  Zap, Copy, Menu, User, Loader2, History, XCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -19,23 +18,23 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
-  // New States for Active Deposit
+  // New States for Active Deposit logic
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
   const { user, wallet, syncAppData } = useAuthStore();
 
-useEffect(() => {
-    // Grouping into one async call prevents race conditions
+  useEffect(() => {
     const initializeDashboard = async () => {
       try {
+        // Run these to get data
         await syncAppData();
         await checkActiveDeposit();
         await fetchProducts();
       } catch (error) {
         console.error("Initialization failed:", error);
       } finally {
-        // This is the "Kill Switch" for the loading spinner
+        // This stops the infinite loading regardless of success/error
         setProductsLoading(false);
       }
     };
@@ -62,8 +61,8 @@ useEffect(() => {
       setCancelLoading(true);
       await api.post(`/wallet/cancel-deposit/${id}`);
       toast.success("Deposit cancelled");
-      setActiveDeposit(null); // Clear the banner
-      syncAppData(); // Refresh balance
+      setActiveDeposit(null); 
+      syncAppData(); 
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to cancel");
     } finally {
@@ -73,13 +72,10 @@ useEffect(() => {
 
   const fetchProducts = async () => {
     try {
-     
       const response = await api.get('/products/all'); 
       setDbProducts(response.data.data || []);
     } catch (error) {
       console.error("Failed to fetch investment plans:", error);
-    } finally {
-      
     }
   };
 
@@ -89,14 +85,11 @@ useEffect(() => {
       setBuyingId(productId);
       const response = await api.post('/products/buy-product', { productId });
       if (response.data.status === "success") {
-        toast.success("Investment active! First yield in 24hrs.");
+        toast.success("Investment active!");
         syncAppData(); 
-      } else {
-        toast.error(response.data.message || "Purchase failed.");
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Connection error. Try again.";
-      toast.error(errorMsg);
+      toast.error(error.response?.data?.message || "Purchase failed.");
     } finally {
       setBuyingId(null);
     }
@@ -150,61 +143,50 @@ useEffect(() => {
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
           
-          {/* --- RESUME DEPOSIT BANNER --- */}
-         {activeDeposit && (
-  <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${
-    activeDeposit.status === 'processing' 
-      ? 'bg-[#064E3B] border-emerald-400' // Darker green for processing
-      : 'bg-[#1E293B] border-[#00D084]'   // Standard slate for pending
-  }`}>
-    <div className="flex items-center gap-4">
-      <div className="p-3 bg-white/10 rounded-2xl">
-        <Loader2 className="text-[#00D084] animate-spin" size={24} />
-      </div>
-      <div>
-        <h4 className="font-bold text-lg">
-          {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
-        </h4>
-        <p className="text-slate-400 text-sm">
-          ₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}
-        </p>
-      </div>
-    </div>
-    
-    <div className="flex gap-3 w-full md:w-auto">
-      {/* Only show Cancel if it's still pending. Once processing, they can't cancel easily. */}
-      {activeDeposit.status === 'pending' && (
-        <button 
-          onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
-          disabled={cancelLoading}
-          className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
-        >
-          {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
-        </button>
-      )}
+          {/* --- ACTIVE DEPOSIT BANNER --- */}
+          {activeDeposit && (
+            <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${
+              activeDeposit.status === 'processing' ? 'bg-[#064E3B] border-emerald-400' : 'bg-[#1E293B] border-[#00D084]'
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/10 rounded-2xl">
+                  <Loader2 className="text-[#00D084] animate-spin" size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">
+                    {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
+                  </h4>
+                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()} • Ref: {activeDeposit.description}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 w-full md:w-auto">
+                {activeDeposit.status === 'pending' && (
+                  <button 
+                    onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
+                    disabled={cancelLoading}
+                    className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
+                  >
+                    {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    if (activeDeposit.status === 'processing') {
+                      navigate('/transaction-status', { state: { deposit: activeDeposit } });
+                    } else {
+                      navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference: activeDeposit.description, transactionId: activeDeposit.ledger_id } });
+                    }
+                  }}
+                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+                >
+                  {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
+                </button>
+              </div>
+            </div>
+          )}
 
-      <button 
-        onClick={() => {
-          if (activeDeposit.status === 'processing') {
-            navigate('/transaction-status', { state: { deposit: activeDeposit } });
-          } else {
-            navigate('/confirm-payment', { 
-              state: { 
-                amount: activeDeposit.amount, 
-                reference: activeDeposit.description, 
-                transactionId: activeDeposit.ledger_id 
-              } 
-            });
-          }
-        }}
-        className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
-      >
-        {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
-      </button>
-    </div>
-  </div>
-)}
-          {/* Balance Card Section */}
+          {/* BALANCE CARD SECTION */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-4">
@@ -241,7 +223,7 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Investment Plans Section */}
+          {/* INVESTMENT PLANS SECTION */}
           <section className="pb-12">
             <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-xl font-black text-gray-800">Available Investment Plans</h3>
@@ -258,7 +240,6 @@ useEffect(() => {
                   <InvestmentCard 
                     key={pkg.id || i} 
                     pkg={pkg} 
-                    index={i} 
                     onInvest={handleInvest}
                     isBuying={buyingId === pkg.id} 
                   />
@@ -271,5 +252,37 @@ useEffect(() => {
     </div>
   );
 };
-export default Dashboard
-// ... keep InvestmentCard, StatBox, and InfoRow helper components as they were
+
+/* --- HELPER COMPONENTS --- */
+
+const InfoRow = ({ label, value }) => (
+  <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+    <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider">{label}</span>
+    <span className="text-gray-800 font-black">{value}</span>
+  </div>
+);
+
+const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
+  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+    <div className="flex justify-between items-start mb-4">
+      <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600"><Zap size={24} /></div>
+    </div>
+    <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
+    <p className="text-gray-400 text-xs mb-6 font-bold">Daily yield: {pkg.daily_yield}%</p>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Price</p>
+        <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
+      </div>
+      <button 
+        onClick={() => onInvest(pkg.id, pkg.name)} 
+        disabled={isBuying} 
+        className="bg-[#006B5E] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
+      >
+        {isBuying ? "..." : 'Invest'}
+      </button>
+    </div>
+  </div>
+);
+
+export default Dashboard;
