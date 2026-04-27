@@ -19,10 +19,19 @@ const Deposit = () => {
 
     setLoading(true);
     try {
-      // 1. Create the record in the DB before navigating
+      // 1. CHECK FOR PENDING TRANSACTIONS FIRST
+      const checkRes = await api.get('/wallet/active-deposit');
+      
+      if (checkRes.data.active) {
+        alert("You have an unfinished deposit request. Please complete or cancel it on your dashboard before making a new one.");
+        navigate('/dashboard');
+        return; // Stop the execution here
+      }
+
+      // 2. Create the record in the DB if no active deposit is found
       const res = await api.post('/wallet/initiate-deposit', { amount: finalAmount });
       
-      // 2. Pass the ID and Reference from the DB to the next page
+      // 3. Pass the ID and Reference from the DB to the next page
       navigate('/confirm-deposit', { 
         state: { 
           amount: finalAmount, 
@@ -31,7 +40,8 @@ const Deposit = () => {
         } 
       });
     } catch (err) {
-      alert("Could not start transaction. Please check your connection.");
+      const errorMsg = err.response?.data?.message || "Could not start transaction. Please check your connection.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -41,7 +51,11 @@ const Deposit = () => {
     <div className="min-h-screen bg-[#F8F9FA] pb-28 flex justify-center">
       <div className="w-full max-w-md relative">
         <div className="flex items-center gap-4 p-4 pt-6">
-          <button onClick={() => navigate(-1)} className="w-8 h-8 flex items-center justify-center bg-white border border-gray-100 rounded-lg">
+          <button 
+            onClick={() => navigate(-1)} 
+            disabled={loading}
+            className="w-8 h-8 flex items-center justify-center bg-white border border-gray-100 rounded-lg disabled:opacity-50"
+          >
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
           <h1 className="text-base font-bold text-gray-900">Recharge Now</h1>
@@ -53,10 +67,11 @@ const Deposit = () => {
             {amounts.map((amt) => (
               <button
                 key={amt}
+                disabled={loading}
                 onClick={() => setAmount(amt.toString())}
                 className={`py-2.5 rounded-lg border text-sm font-semibold transition-all ${
                   amount === amt.toString() ? 'border-[#007B65] bg-[#E5F2F0] text-[#007B65]' : 'border-gray-200 text-gray-600'
-                }`}
+                } disabled:opacity-50`}
               >
                 ₦{amt.toLocaleString()}
               </button>
@@ -69,8 +84,9 @@ const Deposit = () => {
               type="number"
               placeholder="Enter amount"
               value={amount}
+              disabled={loading}
               onChange={(e) => setAmount(e.target.value)}
-              className="flex-1 p-3 outline-none text-sm"
+              className="flex-1 p-3 outline-none text-sm disabled:bg-gray-50"
             />
           </div>
         </div>
@@ -79,7 +95,7 @@ const Deposit = () => {
           <button 
             onClick={handleContinue} 
             disabled={loading || !amount}
-            className="w-full bg-[#007B65] text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2"
+            className="w-full bg-[#007B65] text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
           >
             {loading ? <Loader2 className="animate-spin" /> : "Recharge Now"}
           </button>
