@@ -162,7 +162,7 @@ const TransactionRow = ({ txn, onAction, isProcessing }) => (
         {isProcessing ? '...' : 'Approve'}
       </button>
       <button 
-        onClick={() => onAction(txn.id, 'reject')}
+        onClick={() => onAction(txn.ledger_id, 'reject')}
         disabled={isProcessing}
         className="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 disabled:opacity-50"
       >
