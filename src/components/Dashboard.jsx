@@ -183,7 +183,7 @@ const Dashboard = () => {
                       navigate('/transaction-status', { state: { deposit: activeDeposit } });
                     } else {
                       // Correctly mapping ledger_id to transactionId for the next page
-                      navigate('/confirm-payment', { 
+                      navigate('/confirm-deposit', { 
                         state: { 
                           amount: activeDeposit.amount, 
                           reference: activeDeposit.description, 
