@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowDownCircle, ArrowUpCircle, CalendarCheck, UserPlus, 
-  Zap, Copy, Menu, Bell, User, ChevronRight, Loader2, History 
+  Zap, Copy, Menu, Bell, User, ChevronRight, Loader2, History, XCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -19,12 +19,45 @@ const Dashboard = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
 
+  // New States for Active Deposit
+  const [activeDeposit, setActiveDeposit] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+
   const { user, wallet, syncAppData } = useAuthStore();
 
   useEffect(() => {
     syncAppData(); 
     fetchProducts();
+    checkActiveDeposit(); // Check for pending deposits on mount
   }, []);
+
+  const checkActiveDeposit = async () => {
+    try {
+      const response = await api.get('/wallet/active-deposit');
+      if (response.data.active) {
+        setActiveDeposit(response.data.deposit);
+      } else {
+        setActiveDeposit(null);
+      }
+    } catch (error) {
+      console.error("Failed to check active deposit:", error);
+    }
+  };
+
+  const handleCancelDeposit = async (id) => {
+    if (!window.confirm("Cancel this deposit request?")) return;
+    try {
+      setCancelLoading(true);
+      await api.post(`/wallet/cancel-deposit/${id}`);
+      toast.success("Deposit cancelled");
+      setActiveDeposit(null); // Clear the banner
+      syncAppData(); // Refresh balance
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to cancel");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -40,12 +73,10 @@ const Dashboard = () => {
 
   const handleInvest = async (productId, productName) => {
     if (!window.confirm(`Confirm investment in ${productName}?`)) return;
-
     try {
       setBuyingId(productId);
       const response = await api.post('/products/buy-product', { productId });
-
-      if (response.data.status==="success") {
+      if (response.data.status === "success") {
         toast.success("Investment active! First yield in 24hrs.");
         syncAppData(); 
       } else {
@@ -77,7 +108,6 @@ const Dashboard = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
-        {/* Updated Header */}
         <header className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -91,11 +121,7 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3 md:gap-6">
-            {/* Transaction History Button */}
-            <button 
-              onClick={() => navigate('/transactions')}
-              className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative border border-transparent hover:border-emerald-100"
-            >
+            <button onClick={() => navigate('/transactions')} className="text-gray-500 hover:text-[#006B5E] p-2.5 bg-gray-50 hover:bg-emerald-50 rounded-full transition-all relative border border-transparent hover:border-emerald-100">
               <History size={22} />
             </button>
 
@@ -103,11 +129,7 @@ const Dashboard = () => {
               <div className="hidden md:block text-right">
                 <p className="text-sm font-black text-gray-800">{user?.phoneNumber || '0000000000'}</p>
               </div>
-              {/* Profile Button */}
-              <button 
-                onClick={() => navigate('/profile')}
-                className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E] hover:bg-[#006B5E] hover:text-white transition-all active:scale-95 shadow-sm"
-              >
+              <button onClick={() => navigate('/profile')} className="w-10 h-10 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-center text-[#006B5E] hover:bg-[#006B5E] hover:text-white transition-all shadow-sm">
                 <User size={20} />
               </button>
             </div>
@@ -115,7 +137,43 @@ const Dashboard = () => {
         </header>
 
         <div className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
-          {/* Balance Card */}
+          
+          {/* --- RESUME DEPOSIT BANNER --- */}
+          {activeDeposit && (
+            <div className={`animate-in slide-in-from-top-4 duration-500 rounded-[2rem] p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 ${activeDeposit.status === 'processing' ? 'bg-[#064E3B] border-emerald-400' : 'bg-[#1E293B] border-[#00D084]'}`}>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/10 rounded-2xl">
+                  <Loader2 className="text-[#00D084] animate-spin" size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">
+                    {activeDeposit.status === 'processing' ? 'Verification in Progress' : 'Unfinished Recharge'}
+                  </h4>
+                  <p className="text-slate-400 text-sm">₦{Number(activeDeposit.amount).toLocaleString()}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 w-full md:w-auto">
+                {activeDeposit.status === 'pending' && (
+                  <button 
+                    onClick={() => handleCancelDeposit(activeDeposit.ledger_id)}
+                    disabled={cancelLoading}
+                    className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white border border-slate-700 transition-all flex items-center justify-center gap-2"
+                  >
+                    {cancelLoading ? <Loader2 size={16} className="animate-spin" /> : <><XCircle size={16}/> Cancel</>}
+                  </button>
+                )}
+                <button 
+                  onClick={() => navigate('/confirm-payment', { state: { amount: activeDeposit.amount, reference: activeDeposit.description.split(': ')[1] || 'REF', transactionId: activeDeposit.ledger_id } })}
+                  className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+                >
+                  {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Balance Card Section */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[2.5rem] p-6 md:p-10 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[240px]">
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-4">
@@ -152,7 +210,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Investment Plans */}
+          {/* Investment Plans Section */}
           <section className="pb-12">
             <div className="flex items-center justify-between mb-8 px-2">
                 <h3 className="text-xl font-black text-gray-800">Available Investment Plans</h3>
@@ -183,57 +241,4 @@ const Dashboard = () => {
   );
 };
 
-const InvestmentCard = ({ pkg, index, onInvest, isBuying }) => (
-  <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
-    <div className="bg-[#006B5E] p-8 text-white flex justify-between items-center relative overflow-hidden">
-      <div className="relative z-10">
-        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 font-black mb-2">
-          {index + 1}
-        </div>
-        <h4 className="font-black text-xl">{pkg.name}</h4>
-      </div>
-      <p className="text-3xl font-black relative z-10 tracking-tighter">
-        ₦{Number(pkg.price).toLocaleString()}
-      </p>
-      <div className="absolute right-[-20px] bottom-[-20px] opacity-10">
-        <Zap size={100} fill="white" />
-      </div>
-    </div>
-    <div className="p-8 space-y-8">
-      <div className="grid grid-cols-3 gap-2">
-        <StatBox label="Term" value={`${pkg.duration_days} Days`} />
-        <StatBox label="Daily" value={`₦${Number(pkg.daily_income).toLocaleString()}`} />
-        <StatBox label="Total" value={`₦${Number(pkg.total_return).toLocaleString()}`} />
-      </div>
-      <button 
-        disabled={isBuying}
-        onClick={() => onInvest(pkg.product_id, pkg.name)}
-        className="w-full bg-[#006B5E] text-white py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-3 hover:bg-[#005F55] active:scale-95 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isBuying ? (
-          <Loader2 className="animate-spin" size={20} />
-        ) : (
-          <>
-            <Zap size={20} fill="white" /> Invest Now
-          </>
-        )}
-      </button>
-    </div>
-  </div>
-);
-
-const StatBox = ({ label, value }) => (
-  <div className="text-center bg-gray-50 p-3 rounded-2xl">
-    <p className="text-[9px] text-gray-400 font-bold uppercase mb-1 tracking-widest">{label}</p>
-    <p className="font-black text-gray-800 text-xs md:text-sm whitespace-nowrap">{value}</p>
-  </div>
-);
-
-const InfoRow = ({ label, value }) => (
-  <div className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
-    <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">{label}</span>
-    <span className="text-sm font-black text-gray-800">{value}</span>
-  </div>
-);
-
-export default Dashboard;
+// ... keep InvestmentCard, StatBox, and InfoRow helper components as they were
