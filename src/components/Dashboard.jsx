@@ -192,7 +192,7 @@ const Dashboard = () => {
                   }
                   className="flex-1 md:flex-none bg-[#00D084] hover:bg-[#00b975] text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                 >
-                  {activeDeposit.status === 'processing' ? 'View Status' : 'Complete Now'}
+                   Complete Now
                 </button>
               </div>
             </div>
