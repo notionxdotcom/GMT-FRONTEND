@@ -232,10 +232,10 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {dbProducts.map((pkg, i) => (
                   <InvestmentCard 
-                    key={pkg.id || i} 
+                    key={pkg.product_id } 
                     pkg={pkg} 
                     onInvest={handleInvest}
-                    isBuying={buyingId === pkg.id} 
+                    isBuying={buyingId === pkg.product_id} 
                   />
                 ))}
               </div>
@@ -275,7 +275,7 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
         <p className="text-lg font-black text-gray-800">₦{Number(pkg.price).toLocaleString()}</p>
       </div>
       <button 
-        onClick={() => onInvest(pkg.id, pkg.name)} 
+        onClick={() => onInvest(pkg.product_id, pkg.name)} 
         disabled={isBuying} 
         className="bg-[#006B5E] hover:bg-[#005F55] text-white px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
       >
