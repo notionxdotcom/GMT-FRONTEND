@@ -276,7 +276,7 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
     </div>
     <h4 className="text-xl font-black text-gray-800 mb-1">{pkg.name}</h4>
     <p className="text-gray-400 text-xs mb-6 font-bold uppercase tracking-wider">
-      Daily yield: {Number(pkg.daily_yield).toFixed(1)}%
+      Daily yield: {Number(pkg.daily_income).toFixed(1)}%
     </p>
     <div className="flex items-center justify-between">
       <div>
