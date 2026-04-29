@@ -134,7 +134,7 @@ const BankAccountScreen = () => {
             <input 
               required
               className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-slate-900 transition"
-              placeholder="Goodness Peters"
+              placeholder="Emmanuel Arthur"
               value={formData.account_name}
               onChange={(e) => setFormData({...formData, account_name: e.target.value})}
             />
