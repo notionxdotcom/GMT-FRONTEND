@@ -27,7 +27,7 @@ const MyTeam = () => {
         const sum = ledgerEntries.reduce((acc, curr) => {
           const entryType = curr.entry_type?.toLowerCase().trim();
           // Updated to 'referral' to match our bulletproof script
-          if (entryType === 'referral') {
+          if (entryType === 'referral_commission') {
             const amount = parseFloat(curr.amount);
             return acc + (isNaN(amount) ? 0 : amount);
           }
