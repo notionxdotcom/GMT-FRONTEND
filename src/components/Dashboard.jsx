@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Zap, Copy, Menu, User, Loader2, History, CalendarCheck, ShieldCheck
+  Zap, Copy, Menu, User, Loader2, History, CalendarCheck, 
+  ShieldCheck, X, MessageCircle, Radio, ChevronRight 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
@@ -10,15 +11,6 @@ import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
-
-  // Trigger pop-up on load
-  useEffect(() => {
-    // Small timeout so the dashboard loads first for a better "feel"
-    const timer = setTimeout(() => {
-      setShowJoinModal(true);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, []);
   const navigate = useNavigate();
   const logoPath = '/src/assets/logo.jpeg';
   const [activeTab, setActiveTab] = useState('Home');
@@ -27,12 +19,20 @@ const Dashboard = () => {
   const [dbProducts, setDbProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [buyingId, setBuyingId] = useState(null);
-
   const [activeDeposit, setActiveDeposit] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
   const { user, wallet, syncAppData } = useAuthStore();
 
+  // 1. Pop-up trigger on load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowJoinModal(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 2. Data Initialization
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
@@ -112,7 +112,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] flex overflow-x-hidden relative">
       <Sidebar 
         isMenuOpen={isMenuOpen} 
         toggleMenu={() => setIsMenuOpen(!isMenuOpen)} 
@@ -182,7 +182,7 @@ const Dashboard = () => {
                   })}
                   className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-black transition-all active:scale-95 shadow-lg shadow-blue-900/20"
                 >
-                   Verify Now
+                    Verify Now
                 </button>
               </div>
             </div>
@@ -255,6 +255,69 @@ const Dashboard = () => {
           </section>
         </div>
       </main>
+
+      {/* --- POP-OUT MODAL (Moved here for correct scoping) --- */}
+      {showJoinModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500"
+            onClick={() => setShowJoinModal(false)}
+          ></div>
+
+          <div className="relative bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
+            <button 
+              onClick={() => setShowJoinModal(false)}
+              className="absolute top-6 right-6 p-2 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center mb-6 border border-blue-100">
+                <ShieldCheck size={40} className="text-blue-600" />
+              </div>
+
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                Join the GMT <br/> Collective
+              </h2>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-3 mb-8">
+                Official Real-Time Updates
+              </p>
+
+              <div className="w-full space-y-3">
+                <a href="https://chat.whatsapp.com/YOUR_LINK" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group hover:bg-emerald-100 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-emerald-600 p-2 rounded-xl text-white"><MessageCircle size={18} /></div>
+                    <div className="text-left">
+                      <p className="text-[13px] font-black text-emerald-900">GMT Community</p>
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase">Chat with Investors</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                </a>
+
+                <a href="https://whatsapp.com/channel/YOUR_LINK" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-2xl group hover:bg-blue-100 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-600 p-2 rounded-xl text-white"><Radio size={18} /></div>
+                    <div className="text-left">
+                      <p className="text-[13px] font-black text-blue-900">Official Channel</p>
+                      <p className="text-[10px] font-bold text-blue-600 uppercase">Market Signals</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-blue-400 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+
+              <button 
+                onClick={() => setShowJoinModal(false)}
+                className="mt-8 text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] hover:text-slate-600 transition-colors"
+              >
+                Enter Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -296,90 +359,7 @@ const InvestmentCard = ({ pkg, onInvest, isBuying }) => (
         {isBuying ? <Loader2 size={20} className="animate-spin" /> : 'Invest'}
       </button>
     </div>
-    {showJoinModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          {/* Animated Backdrop */}
-          <div 
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500"
-            onClick={() => setShowJoinModal(false)}
-          ></div>
-
-          {/* Modal Card */}
-          <div className="relative bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
-            <button 
-              onClick={() => setShowJoinModal(false)}
-              className="absolute top-6 right-6 p-2 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center mb-6 border border-blue-100">
-                <ShieldCheck size={40} className="text-blue-600" />
-              </div>
-
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
-                Join the GMT <br/> Collective
-              </h2>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-3 mb-8">
-                Official Real-Time Updates
-              </p>
-
-              <div className="w-full space-y-3">
-                {/* WhatsApp Community */}
-                <a 
-                  href="https://chat.whatsapp.com/YOUR_COMMUNITY_LINK" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group hover:bg-emerald-100 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-emerald-600 p-2 rounded-xl text-white">
-                      <MessageCircle size={18} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-[13px] font-black text-emerald-900">GMT Community</p>
-                      <p className="text-[10px] font-bold text-emerald-600 uppercase">Chat with Investors</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
-                </a>
-
-                {/* WhatsApp Channel */}
-                <a 
-                  href="https://whatsapp.com/channel/YOUR_CHANNEL_LINK" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="w-full flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-2xl group hover:bg-blue-100 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 p-2 rounded-xl text-white">
-                      <Radio size={18} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-[13px] font-black text-blue-900">Official Channel</p>
-                      <p className="text-[10px] font-bold text-blue-600 uppercase">Market Signals</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="text-blue-400 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </div>
-
-              <button 
-                onClick={() => setShowJoinModal(false)}
-                className="mt-8 text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] hover:text-slate-600 transition-colors"
-              >
-                Enter Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
- 
-
-
-  
+  </div>
 );
 
 export default Dashboard;
