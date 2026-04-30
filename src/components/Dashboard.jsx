@@ -218,7 +218,7 @@ const Dashboard = () => {
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">GMT Platform Stats</h4>
               <div className="space-y-4">
-                <InfoRow label="Active Capital" value={`₦${wallet.totalDeposit?.toLocaleString() || 0}`} />
+               
                 <InfoRow label="Trading Fee" value="20%" />
                 <div className="pt-4 mt-4 border-t border-slate-50">
                    <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-tighter">
