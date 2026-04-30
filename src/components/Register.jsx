@@ -141,7 +141,7 @@ const RegistrationPage = () => {
             {/* Password Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Key</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                   <input 
@@ -163,7 +163,7 @@ const RegistrationPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Verification</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
                 <div className="relative group">
                   <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                   <input 
@@ -180,7 +180,7 @@ const RegistrationPage = () => {
 
             {/* Referral Code */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Referral Node (Optional)</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Referral Code (Optional)</label>
               <div className="relative group">
                 <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input 
@@ -203,14 +203,14 @@ const RegistrationPage = () => {
               {loading ? <Loader2 className="animate-spin" /> : (
                 <>
                   <Shield size={18} />
-                  <span>Finalize Account</span>
+                  <span>Create Account</span>
                 </>
               )}
             </button>
           </form>
 
           <p className="text-center mt-10 text-slate-400 font-bold text-xs uppercase tracking-widest">
-            Member of the node? <Link to="/login" className="text-blue-600 hover:text-blue-800 transition-colors border-b-2 border-blue-600/20 pb-0.5">Sign In</Link>
+            Alredy have an account ? <Link to="/login" className="text-blue-600 hover:text-blue-800 transition-colors border-b-2 border-blue-600/20 pb-0.5">Sign In</Link>
           </p>
         </div>
       </div>
