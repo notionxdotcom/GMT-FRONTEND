@@ -152,7 +152,7 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 active:scale-[0.97] transition-all shadow-xl shadow-blue-600/20 mt-4 flex justify-center items-center gap-3"
             >
-              {loading ? <Loader2 className="animate-spin" /> : "Access Account"}
+              {loading ? <Loader2 className="animate-spin" /> : "Log in"}
             </button>
           </form>
 

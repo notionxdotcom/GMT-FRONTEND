@@ -46,7 +46,7 @@ const MyTeam = () => {
     level3: { label: "3rd Tier", reward: "1%", color: "bg-slate-500", textColor: "text-slate-500" },
   };
 
-  const currentList = network[activeTab] || [];
+  const currentList = network[activTab] || [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-10">
