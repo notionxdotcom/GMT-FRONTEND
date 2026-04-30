@@ -45,6 +45,7 @@ const MyTeam = () => {
     level2: { label: "2nd Tier", reward: "1%", color: "bg-indigo-500", textColor: "text-indigo-500" },
     level3: { label: "3rd Tier", reward: "1%", color: "bg-slate-500", textColor: "text-slate-500" },
   };
+  
 
   const currentList = network[activeTab] || [];
 

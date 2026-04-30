@@ -79,7 +79,7 @@ const TransactionHistory = () => {
         ) : filteredTransactions.length > 0 ? (
           <div className="space-y-4">
             {filteredTransactions.map((tx) => {
-              const isCredit = ['deposit', 'referral_commission', 'investment_return'].includes(tx.entry_type?.toLowerCase());
+              const isCredit = ['deposit', 'referral_commission', "welcomebonus",  'investment_return'].includes(tx.entry_type?.toLowerCase());
               
               return (
                 <div key={tx.id} className="bg-white p-5 rounded-[2rem] border border-slate-50 shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all hover:border-blue-100">
