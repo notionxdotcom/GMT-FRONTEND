@@ -23,7 +23,7 @@ const UserManagementScreen = lazy(() => import('./components/usermanagement'));
 const Productmanagement = lazy(() => import('./components/productmanagement'));
 const Adminwithdrawals = lazy(() => import('./components/adminwithdrawal'));
 const Adminlogin = lazy(() => import('./components/adminlogin'));
-
+const Getusers= lazy(() => import('./components/getusers'));
 // --- AUTH GUARDS ---
 
 // 1. Protects any logged-in user route
@@ -85,6 +85,7 @@ function App() {
               <Route path="users" element={<UserManagementScreen />} />
               <Route path="products" element={<Productmanagement />} />
               <Route path="withdrawals" element={<Adminwithdrawals />} />
+               <Route path="users" element={<Getusers />} />
             </Route>
           </Route>
 
