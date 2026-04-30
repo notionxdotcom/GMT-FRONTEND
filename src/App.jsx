@@ -82,7 +82,7 @@ function App() {
             <Route path="/admin" element={<MainAdminPortal />}>
               <Route index element={<Navigate to="transactions" replace />} />
               <Route path="transactions" element={<TransactionScreen />} />
-              <Route path="users" element={<UserManagementScreen />} />
+         
               <Route path="products" element={<Productmanagement />} />
               <Route path="withdrawals" element={<Adminwithdrawals />} />
                <Route path="users" element={<Getusers />} />
