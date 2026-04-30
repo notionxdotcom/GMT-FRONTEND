@@ -122,7 +122,7 @@ const RegistrationPage = () => {
           <form className="space-y-6" onSubmit={handlesignup}>
             {/* Phone Number */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mobile Identity</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone number</label>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-focus-within:bg-blue-50 transition-colors">
                   <Phone className="w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
