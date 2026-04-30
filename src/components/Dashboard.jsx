@@ -306,6 +306,16 @@ const Dashboard = () => {
                   </div>
                   <ChevronRight size={18} className="text-blue-400 group-hover:translate-x-1 transition-transform" />
                 </a>
+                 <a href="https://t.me/+I9t_nIxMRMliZTI8" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group hover:bg-emerald-100 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-emerald-600 p-2 rounded-xl text-white"><MessageCircle size={18} /></div>
+                    <div className="text-left">
+                      <p className="text-[13px] font-black text-emerald-900">GMT Telegram Community</p>
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase">Chat with Investors</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                </a>
               </div>
 
               <button 

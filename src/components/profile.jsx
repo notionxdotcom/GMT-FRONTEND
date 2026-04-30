@@ -5,7 +5,8 @@ import useBankStore from '../../store/bankdetailsstore';
 import { 
   ShieldCheck, LogOut, Lock, Landmark, History, 
   UserPlus, ArrowDownLeft, ArrowUpRight, Copy, 
-  Check, ChevronRight, User, MessageCircle, Radio, ExternalLink 
+  Check, ChevronRight, User, MessageCircle, Radio, 
+  ExternalLink, Send 
 } from 'lucide-react';
 
 // --- 1. REUSABLE COMPONENTS ---
@@ -154,6 +155,16 @@ export default function Profile() {
         </ListSection>
 
         <ListSection title="GMT Collective" accent="bg-slate-900">
+          {/* Telegram Channel */}
+          <a href='https://t.me/+I9t_nIxMRMliZTI8' target="_blank" rel="noreferrer">
+            <ListItem 
+              icon={<div className="bg-blue-50 p-2 rounded-xl"><Send size={18} className="text-blue-500"/></div>} 
+              label="Telegram Channel" 
+              subLabel="Official GMT Announcements" 
+              isExternal 
+            />
+          </a>
+
           {/* WhatsApp Community */}
           <a href='https://chat.whatsapp.com/DEhEEQYIAWP3dAiHl2nClp?mode=gi_t' target="_blank" rel="noreferrer">
             <ListItem icon={<div className="bg-emerald-50 p-2 rounded-xl"><MessageCircle size={18} className="text-emerald-600"/></div>} label="WhatsApp Community" subLabel="Connect with GMT Members" isExternal />
