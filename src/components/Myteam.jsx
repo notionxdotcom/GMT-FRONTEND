@@ -41,8 +41,8 @@ const MyTeam = () => {
   }, []);
 
   const tierConfig = {
-    level1: { label: "1st Tier", reward: "10%", color: "bg-blue-600", textColor: "text-blue-600" },
-    level2: { label: "2nd Tier", reward: "2%", color: "bg-indigo-500", textColor: "text-indigo-500" },
+    level1: { label: "1st Tier", reward: "30%", color: "bg-blue-600", textColor: "text-blue-600" },
+    level2: { label: "2nd Tier", reward: "1%", color: "bg-indigo-500", textColor: "text-indigo-500" },
     level3: { label: "3rd Tier", reward: "1%", color: "bg-slate-500", textColor: "text-slate-500" },
   };
 
