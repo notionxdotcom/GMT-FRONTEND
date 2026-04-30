@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Wallet, Users, LogOut, LayoutDashboard, ShieldCheck,Package } from 'lucide-react';
+import { Wallet, Users, LogOut, LayoutDashboard, ShieldCheck,Package, User } from 'lucide-react';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -11,6 +11,8 @@ const AdminLayout = () => {
     { label: 'Transactions', path: '/admin/transactions', icon: <Wallet size={18} /> },
     { label: 'Withdrawal Management', path: '/admin/withdrawals', icon: <Wallet size={18} /> },
     { label: 'Product Management', path: '/admin/products', icon: <Package size={18} /> },
+     { label: 'Users', path: '/admin/users', icon: <User size={18} /> },
+    
   ];
   
 
