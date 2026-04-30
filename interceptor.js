@@ -2,7 +2,7 @@ import axios from 'axios';
 import useAuthStore from './store/authstore';
 
 const api = axios.create({
-  baseURL: 'https://sublime-optimism-production-20d2.up.railway.app/api', 
+  baseURL: 'gmt-backend-production.up.railway.appgmt-backend-production.up.railway.app/api', 
   // withCredentials is no longer strictly needed for LocalStorage, 
   // but you can keep it if you still use other cookie features.
 });

@@ -2,93 +2,70 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authstore';
 import useBankStore from '../../store/bankdetailsstore';
+import { 
+  ShieldCheck, LogOut, Lock, Landmark, History, 
+  UserPlus, ArrowDownLeft, ArrowUpRight, Copy, 
+  Check, ChevronRight, User, MessageCircle, Radio, ExternalLink 
+} from 'lucide-react';
 
 // --- 1. REUSABLE COMPONENTS ---
 
 const ActionButton = ({ icon, label, color, onClick }) => (
-  <button onClick={onClick} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 flex flex-col items-center gap-2 active:scale-95 transition-transform">
-    <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center`}>
+  <button onClick={onClick} className="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-50 flex flex-col items-center gap-2 active:scale-95 transition-all">
+    <div className={`w-11 h-11 ${color} rounded-2xl flex items-center justify-center`}>
       {icon}
     </div>
-    <span className="text-[12px] font-bold text-gray-700">{label}</span>
+    <span className="text-[11px] font-black text-slate-600 uppercase tracking-tighter">{label}</span>
   </button>
 );
 
 const ListSection = ({ title, children, accent }) => (
   <div className="space-y-3">
     <div className="flex items-center gap-2 px-1">
-      <div className={`w-1 h-4 ${accent} rounded-full`}></div>
-      <h3 className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">{title}</h3>
+      <div className={`w-1 h-3 ${accent} rounded-full`}></div>
+      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</h3>
     </div>
-    <div className="bg-white rounded-[24px] border border-gray-50 shadow-sm divide-y divide-gray-50 overflow-hidden">
+    <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm divide-y divide-slate-50 overflow-hidden">
       {children}
     </div>
   </div>
 );
 
 const ListItem = ({ icon, label, subLabel, isDestructive, isExternal, onClick }) => (
-  <button onClick={onClick} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors active:bg-gray-100 text-left">
+  <button onClick={onClick} className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors active:bg-slate-100 text-left">
     <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+      <div className="flex items-center justify-center">
         {icon}
       </div>
       <div>
-        <p className={`text-[14px] font-bold ${isDestructive ? 'text-red-500' : 'text-gray-800'}`}>{label}</p>
-        <p className="text-[11px] text-gray-400 font-medium">{subLabel}</p>
+        <p className={`text-[14px] font-black tracking-tight ${isDestructive ? 'text-red-500' : 'text-slate-800'}`}>{label}</p>
+        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">{subLabel}</p>
       </div>
     </div>
-    <IconChevronRight color={isDestructive ? '#EF4444' : '#D1D5DB'} isExternal={isExternal} />
+    {isExternal ? 
+      <ExternalLink size={14} className="text-slate-300" /> : 
+      <ChevronRight size={18} className={isDestructive ? 'text-red-200' : 'text-slate-200'} />
+    }
   </button>
 );
 
 
-// --- 2. ICONS (SVGs) ---
-
-const IconUserSmall = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007B6E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-const IconUserLarge = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-const IconCopy = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
-const IconCheck = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-const IconChevronRight = ({ color, isExternal }) => (
-  isExternal ? 
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> :
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-);
-const IconRecharge = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
-const IconWithdraw = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m12 5 7 7-7 7"/><path d="M5 12h14"/></svg>;
-const IconInvite = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>;
-const IconHistoryGreen = () => <div className="bg-green-100 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5"><path d="m7 10 5 5 5-5"/></svg></div>;
-const IconHistoryRed = () => <div className="bg-red-100 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5"><path d="m17 14-5-5-5 5"/></svg></div>;
-const IconBank = () => <div className="bg-purple-100 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v3"/><path d="M12 14v3"/><path d="M16 14v3"/></svg></div>;
-const IconLock = () => <div className="bg-amber-100 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>;
-const IconTelegram = () => <div className="bg-blue-100 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>;
-const IconSignOut = () => <div className="bg-red-50 p-2 rounded-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>;
-const IconHome = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-const IconProducts = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
-const IconTeams = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const IconUserActive = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-
-
-// --- 3. MAIN COMPONENT ---
+// --- 2. MAIN COMPONENT ---
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, wallet, clearAuth } = useAuthStore();
   const { bankData, clearBankData } = useBankStore();
-
-  // State for Copy Feedback
   const [copied, setCopied] = useState(false);
 
-const handleCopyCode = () => {
-  if (user?.referral_code) {
-    // Construct the full URL
-    // Use window.location.origin to automatically get 'https://notiox.com' or 'localhost:5173'
-    const referralLink = `${window.location.origin}/register?ref=${user.referral_code}`;
-    
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-};
+  const handleCopyCode = () => {
+    if (user?.referral_code) {
+      const referralLink = `${window.location.origin}/register?ref=${user.referral_code}`;
+      navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const handleSignOut = () => {
     clearAuth();
@@ -97,91 +74,103 @@ const handleCopyCode = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-sans text-[#1A1C1E] pb-32">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 pb-32">
       
-      {/* --- COPY TOAST NOTIFICATION --- */}
+      {/* --- COPY TOAST --- */}
       {copied && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in duration-300">
-          <IconCheck />
-          Referral Link Copied!
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/90 backdrop-blur-xl text-white px-6 py-3 rounded-2xl text-xs font-black shadow-2xl flex items-center gap-2 animate-in slide-in-from-top-4 duration-300">
+          <Check size={16} className="text-blue-400" />
+          GMT LINK COPIED
         </div>
       )}
 
-      <header className="bg-white px-6 py-6 flex justify-between items-center">
+      <header className="bg-white px-6 py-8 flex justify-between items-center border-b border-slate-50">
         <div>
-          <h1 className="text-[20px] font-bold">My Profile</h1>
-          <p className="text-[12px] text-gray-400 font-medium">Account overview & settings</p>
+          <h1 className="text-2xl font-black tracking-tight">Account</h1>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">GMT Member Identity</p>
         </div>
-        <div className="w-10 h-10 bg-[#F0FDFB] rounded-full flex items-center justify-center border border-[#CCF0EB]">
-          <IconUserSmall />
+        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100 text-blue-600">
+          <User size={24} />
         </div>
       </header>
 
-      <main className="px-5 mt-4 space-y-6">
+      <main className="px-5 mt-6 space-y-8">
         {/* Profile Card */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#005F55] to-[#007B6E] rounded-[28px] p-6 shadow-xl shadow-[#007B6E]/20 text-white">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
-              <IconUserLarge />
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172A] to-[#1E40AF] rounded-[2.5rem] p-8 shadow-2xl shadow-blue-900/20 text-white">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+          
+          <div className="flex items-center gap-4 mb-10 relative z-10">
+            <div className="w-14 h-14 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20">
+              <ShieldCheck size={28} className="text-blue-300" />
             </div>
             <div>
-              <h2 className="text-[18px] font-bold">{user?.phoneNumber || 'Member'}</h2>
-              <p className="text-[11px] text-white/70 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span> 
-                Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'April 2026'}
-              </p>
+              <h2 className="text-[18px] font-black tracking-tight">{user?.phoneNumber || 'GMT Member'}</h2>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-200/70">
+                  Verified Investor
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-white/60 mb-1">Balance</p>
-              <p className="text-[20px] font-black">₦{wallet?.balance?.toLocaleString() || '0'}</p>
+          <div className="grid grid-cols-2 gap-4 relative z-10">
+            <div className="bg-white/5 backdrop-blur-md rounded-3xl p-5 border border-white/10">
+              <p className="text-[9px] uppercase tracking-[0.2em] font-black text-blue-200/50 mb-1">Available Funds</p>
+              <p className="text-2xl font-black">₦{wallet?.balance?.toLocaleString() || '0'}</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex justify-between items-center">
+            <div className="bg-white/5 backdrop-blur-md rounded-3xl p-5 border border-white/10 flex justify-between items-center">
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-white/60 mb-1">Referral Code</p>
-                <p className="text-[15px] font-bold">{user?.referral_code || '---'}</p>
+                <p className="text-[9px] uppercase tracking-[0.2em] font-black text-blue-200/50 mb-1">Ref ID</p>
+                <p className="text-lg font-black">{user?.referral_code || '---'}</p>
               </div>
               <button 
                 onClick={handleCopyCode} 
-                className={`p-2 rounded-lg transition-all ${copied ? 'bg-green-500 scale-110 shadow-lg' : 'hover:bg-white/10'}`}
+                className={`p-2.5 rounded-xl transition-all ${copied ? 'bg-blue-500 scale-110' : 'hover:bg-white/10 bg-white/5'}`}
               >
-                {copied ? <IconCheck /> : <IconCopy />}
+                {copied ? <Check size={18} /> : <Copy size={18} />}
               </button>
             </div>
           </div>
         </section>
 
         {/* Action Buttons */}
-        <section className="grid grid-cols-3 gap-3">
-          <ActionButton onClick={() => navigate('/deposit')} icon={<IconRecharge />} label="Recharge" color="bg-green-50 text-[#007B6E]" />
-          <ActionButton onClick={() => navigate('/withdraw')} icon={<IconWithdraw />} label="Withdraw" color="bg-purple-50 text-[#7C3AED]" />
-          <ActionButton onClick={handleCopyCode} icon={<IconInvite />} label="Invite" color="bg-blue-50 text-[#3B82F6]" />
+        <section className="grid grid-cols-3 gap-4 px-1">
+          <ActionButton onClick={() => navigate('/deposit')} icon={<ArrowDownLeft size={22}/>} label="Deposit" color="bg-blue-50 text-blue-600" />
+          <ActionButton onClick={() => navigate('/withdraw')} icon={<ArrowUpRight size={22}/>} label="Payout" color="bg-indigo-50 text-indigo-600" />
+          <ActionButton onClick={handleCopyCode} icon={<UserPlus size={22}/>} label="Invite" color="bg-slate-100 text-slate-600" />
         </section>
 
         {/* List Sections */}
-        <ListSection title="Transaction Records" accent="bg-[#007B6E]">
-          <ListItem icon={<IconHistoryGreen />} label="Recharge History" subLabel="View all deposits" onClick={() => navigate('/recharge-history')} />
-          <ListItem icon={<IconHistoryRed />} label="Withdrawal History" subLabel="View all withdrawals" onClick={() => navigate('/withdrawal-history')} />
+        <ListSection title="Financial Logs" accent="bg-blue-600">
+          <ListItem icon={<div className="bg-blue-50 p-2 rounded-xl"><History size={18} className="text-blue-600"/></div>} label="Deposit History" subLabel="Managed recharge logs" onClick={() => navigate('/recharge-history')} />
+          <ListItem icon={<div className="bg-slate-50 p-2 rounded-xl"><History size={18} className="text-slate-600"/></div>} label="Payout History" subLabel="Verified withdrawal logs" onClick={() => navigate('/withdrawal-history')} />
         </ListSection>
 
-        <ListSection title="Account Settings" accent="bg-[#7C3AED]">
-          <ListItem onClick={() => navigate('/bank-account')} icon={<IconBank />} label="Bank Account" subLabel={bankData ? `${bankData.bank_name} • ${bankData.account_number}` : "Manage payout account"} />
-          <ListItem icon={<IconLock />} label="Change Password" subLabel="Update your security" />
+        <ListSection title="Security & Bank" accent="bg-indigo-600">
+          <ListItem onClick={() => navigate('/bank-account')} icon={<div className="bg-indigo-50 p-2 rounded-xl"><Landmark size={18} className="text-indigo-600"/></div>} label="Bank Account" subLabel={bankData ? `${bankData.bank_name}` : "Connect Payout Method"} />
+          <ListItem icon={<div className="bg-amber-50 p-2 rounded-xl"><Lock size={18} className="text-amber-600"/></div>} label="Security Core" subLabel="Reset Access Key" />
         </ListSection>
 
-        <ListSection title="Support & Community" accent="bg-[#3B82F6]">
-          <a href='https://t.me/+BPhjgB9auWM5ZTBk' target="_blank" rel="noreferrer">
-            <ListItem icon={<IconTelegram />} label="Telegram Channel" subLabel="Join our community" isExternal />
+        <ListSection title="GMT Collective" accent="bg-slate-900">
+          {/* WhatsApp Community */}
+          <a href='https://chat.whatsapp.com/DEhEEQYIAWP3dAiHl2nClp?mode=gi_t' target="_blank" rel="noreferrer">
+            <ListItem icon={<div className="bg-emerald-50 p-2 rounded-xl"><MessageCircle size={18} className="text-emerald-600"/></div>} label="WhatsApp Community" subLabel="Connect with GMT Members" isExternal />
           </a>
-          <ListItem onClick={handleSignOut} icon={<IconSignOut />} label="Sign Out" subLabel="Log out of your account" isDestructive />
-        </ListSection>
-      </main>
+          
+          {/* WhatsApp Channel */}
+          <a href='https://whatsapp.com/channel/0029Vb8bI2hEwEjmQ04kNS0F' target="_blank" rel="noreferrer">
+            <ListItem icon={<div className="bg-emerald-50 p-2 rounded-xl"><Radio size={18} className="text-emerald-600"/></div>} label="Official Channel" subLabel="Daily GMT Market Updates" isExternal />
+          </a>
 
-      {/* Navigation Footer */}
-      
+          <ListItem onClick={handleSignOut} icon={<div className="bg-red-50 p-2 rounded-xl"><LogOut size={18} className="text-red-500"/></div>} label="Exit Session" subLabel="Securely log out" isDestructive />
+        </ListSection>
+
+        <div className="text-center pb-10">
+          <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">GMT Platform v3.0.1</p>
+        </div>
+      </main>
     </div>
   );
 }

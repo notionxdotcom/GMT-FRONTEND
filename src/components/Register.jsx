@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Lock, Shield, Tag, Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
+import { Phone, Lock, Shield, Tag, Eye, EyeOff, CheckCircle2, Loader2, Globe } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // --- Added to read URL params ---
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // 1. Form State
   const [formData, setFormData] = useState({
     phoneNumber: '',
     password: '',
@@ -17,7 +16,6 @@ const RegistrationPage = () => {
     referralCode: ''
   });
 
-  // --- 2. Auto-fill referral code from URL on load ---
   useEffect(() => {
     const ref = searchParams.get('ref');
     if (ref) {
@@ -27,15 +25,12 @@ const RegistrationPage = () => {
 
   const logoPath = '/src/assets/logo.jpeg';
 
-  // 3. Handle Input Changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 4. Signup Logic
   const handlesignup = async (e) => {
     e.preventDefault();
-    
     const { phoneNumber, password, confirmPassword, referralCode } = formData;
 
     if (!phoneNumber || !password || !confirmPassword) {
@@ -50,22 +45,17 @@ const RegistrationPage = () => {
 
     try {
       setLoading(true);
-      
       const baseUrl = 'https://sublime-optimism-production-20d2.up.railway.app'; 
-      
       const response = await axios.post(`${baseUrl}/api/auth/signup`, {
         phoneNumber,
         password,
         referralCode
       });
 
-      console.log("Signup Success:", response.data);
-      alert("Account created successfully!");
+      alert("GMT Account created successfully!");
       navigate('/login'); 
-
     } catch (error) {
-      const errormessage = error?.response?.data?.message || "Connection failed. Check your backend logs.";
-      console.error("Signup Error:", error);
+      const errormessage = error?.response?.data?.message || "Connection failed. Check your network.";
       alert(errormessage);
     } finally {
       setLoading(false);
@@ -73,44 +63,58 @@ const RegistrationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50/30 flex items-center justify-center p-4 font-sans">
-      <div className="max-w-5xl w-full bg-white rounded-[2.5rem] shadow-2xl shadow-blue-100/50 flex flex-col md:flex-row overflow-hidden min-h-[600px]">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
+      <div className="max-w-5xl w-full bg-white rounded-[3rem] shadow-2xl shadow-blue-900/10 flex flex-col md:flex-row overflow-hidden min-h-[650px] border border-slate-100">
         
-        {/* Left Section - Branding */}
-        <div className="md:w-5/12 bg-[#006B5E] p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        {/* Left Section - GMT Branding */}
+        <div className="md:w-5/12 bg-[#0F172A] p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-[-10%] right-[-10%] w-72 h-72 bg-blue-600/20 rounded-full blur-[80px]"></div>
+          <div className="absolute bottom-[-5%] left-[-5%] w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px]"></div>
+          
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-16">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center overflow-hidden border border-white/20 shadow-xl">
                  <img src={logoPath} alt="Logo" className="h-full w-full object-cover" />
               </div>
-              <span className="text-2xl font-semibold tracking-tight">NotionX</span>
+              <span className="text-2xl font-black tracking-tighter">GMT GLOBAL</span>
             </div>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">Join us <br />today</h1>
-            <p className="text-emerald-50/80 text-lg mb-10 max-w-xs leading-relaxed">
-              Create your free account and start building your investment portfolio in minutes.
+            
+            <h1 className="text-5xl font-black mb-6 leading-[1.1] tracking-tight">Secure <br />Your Future.</h1>
+            <p className="text-blue-100/60 text-lg mb-12 max-w-xs font-medium leading-relaxed">
+              Join the elite GMT network and unlock tiered investment yields in seconds.
             </p>
-            <div className="space-y-5">
-              {["Secure & encrypted account", "Real-time portfolio tracking", "24/7 customer support"].map((f, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-300/80" />
-                  <span className="text-sm font-medium text-emerald-50">{f}</span>
+            
+            <div className="space-y-6">
+              {[
+                "Institutional-grade security", 
+                "Automated yield distribution", 
+                "Tiered referral ecosystem"
+              ].map((f, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="bg-blue-500/20 p-1.5 rounded-lg">
+                    <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <span className="text-sm font-bold text-blue-50/90 tracking-tight">{f}</span>
                 </div>
               ))}
             </div>
           </div>
-          <p className="relative z-10 text-xs text-emerald-100/50 mt-12">© 2026 NotionX. All rights reserved.</p>
+          
+          <div className="relative z-10 flex items-center gap-2 mt-12 opacity-40">
+            <Globe size={14} />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">GMT Protocol v2.6</p>
+          </div>
         </div>
 
         {/* Right Section - Form */}
         <div className="md:w-7/12 p-8 md:p-16 bg-white flex flex-col justify-center">
           <div className="mb-10">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Create an account</h2>
-            <p className="text-gray-400 font-medium">Register to continue with us</p>
-            {/* Added a nice badge if a referral is detected */}
+            <h2 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">Get Started</h2>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Authorized Access Registration</p>
+            
             {formData.referralCode && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-emerald-50 text-[#006B5E] px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
-                <Tag size={12} /> Referral Applied
+              <div className="mt-6 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-[10px] font-black border border-blue-100 uppercase tracking-widest shadow-sm shadow-blue-100/50">
+                <Tag size={12} className="animate-pulse" /> Referral Verified
               </div>
             )}
           </div>
@@ -118,38 +122,40 @@ const RegistrationPage = () => {
           <form className="space-y-6" onSubmit={handlesignup}>
             {/* Phone Number */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone Number <span className="text-red-400">*</span></label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mobile Identity</label>
               <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#006B5E] transition-colors" />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-focus-within:bg-blue-50 transition-colors">
+                  <Phone className="w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                </div>
                 <input 
                   type="tel" 
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  placeholder="09065319674"
-                  className="w-full bg-[#F0F5FA] border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-[#006B5E]/20 transition-all outline-none text-gray-700 font-medium"
+                  placeholder="Enter Phone Number"
+                  className="w-full bg-slate-50 border-2 border-transparent rounded-[1.25rem] py-4 pl-16 pr-4 focus:bg-white focus:border-blue-600/20 transition-all outline-none text-slate-700 font-black tracking-tight"
                 />
               </div>
             </div>
 
             {/* Password Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Key</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                   <input 
                     type={showPassword ? "text" : "password"} 
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full bg-[#F0F5FA] border-none rounded-xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-[#006B5E]/20 transition-all outline-none text-gray-700"
+                    className="w-full bg-slate-50 border-2 border-transparent rounded-[1.25rem] py-4 pl-12 pr-12 focus:bg-white focus:border-blue-600/20 transition-all outline-none text-slate-700 font-black"
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-blue-600 transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -157,16 +163,16 @@ const RegistrationPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Confirm <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Verification</label>
+                <div className="relative group">
+                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                   <input 
                     type={showPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full border rounded-xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-[#006B5E]/20 transition-all outline-none text-gray-700 ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-100 bg-white'}`}
+                    className={`w-full border-2 rounded-[1.25rem] py-4 pl-12 pr-4 transition-all outline-none text-slate-700 font-black ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-100 bg-red-50 text-red-600' : 'border-transparent bg-slate-50 focus:bg-white focus:border-blue-600/20'}`}
                   />
                 </div>
               </div>
@@ -174,16 +180,16 @@ const RegistrationPage = () => {
 
             {/* Referral Code */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Referral Code (optional)</label>
-              <div className="relative">
-                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Referral Node (Optional)</label>
+              <div className="relative group">
+                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input 
                   type="text" 
                   name="referralCode"
                   value={formData.referralCode}
                   onChange={handleChange}
-                  placeholder="eg(RpczhdwR)"
-                  className="w-full border border-gray-100 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-[#006B5E]/20 transition-all outline-none text-gray-700 font-medium"
+                  placeholder="Invite Code"
+                  className="w-full bg-slate-50 border-2 border-transparent rounded-[1.25rem] py-4 pl-12 pr-4 focus:bg-white focus:border-blue-600/20 transition-all outline-none text-slate-700 font-black uppercase tracking-widest"
                 />
               </div>
             </div>
@@ -192,14 +198,19 @@ const RegistrationPage = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-[#006B5E] text-white font-bold py-4 rounded-xl hover:bg-[#005a4f] active:scale-[0.98] transition-all shadow-lg shadow-[#006B5E]/20 mt-4 flex justify-center items-center gap-2"
+              className="w-full bg-blue-600 text-white font-black py-5 rounded-[1.25rem] hover:bg-blue-700 active:scale-[0.98] transition-all shadow-xl shadow-blue-600/20 mt-4 flex justify-center items-center gap-3 uppercase tracking-widest text-sm"
             >
-              {loading ? <Loader2 className="animate-spin" /> : "Create Account"}
+              {loading ? <Loader2 className="animate-spin" /> : (
+                <>
+                  <Shield size={18} />
+                  <span>Finalize Account</span>
+                </>
+              )}
             </button>
           </form>
 
-          <p className="text-center mt-8 text-gray-500 font-medium">
-            Already have an account? <Link to="/login" className="text-[#006B5E] font-bold underline decoration-2 underline-offset-4 hover:text-[#005a4f]">Sign in</Link>
+          <p className="text-center mt-10 text-slate-400 font-bold text-xs uppercase tracking-widest">
+            Member of the node? <Link to="/login" className="text-blue-600 hover:text-blue-800 transition-colors border-b-2 border-blue-600/20 pb-0.5">Sign In</Link>
           </p>
         </div>
       </div>
