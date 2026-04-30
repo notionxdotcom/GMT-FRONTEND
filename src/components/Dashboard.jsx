@@ -285,7 +285,7 @@ const Dashboard = () => {
               </p>
 
               <div className="w-full space-y-3">
-                <a href="https://chat.whatsapp.com/YOUR_LINK" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group hover:bg-emerald-100 transition-all">
+                <a href="https://chat.whatsapp.com/DEhEEQYIAWP3dAiHl2nClp?mode=gi_t" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group hover:bg-emerald-100 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="bg-emerald-600 p-2 rounded-xl text-white"><MessageCircle size={18} /></div>
                     <div className="text-left">
@@ -296,7 +296,7 @@ const Dashboard = () => {
                   <ChevronRight size={18} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
                 </a>
 
-                <a href="https://whatsapp.com/channel/YOUR_LINK" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-2xl group hover:bg-blue-100 transition-all">
+                <a href="https://whatsapp.com/channel/0029Vb8bI2hEwEjmQ04kNS0F" target="_blank" rel="noreferrer" className="w-full flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-2xl group hover:bg-blue-100 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-600 p-2 rounded-xl text-white"><Radio size={18} /></div>
                     <div className="text-left">
